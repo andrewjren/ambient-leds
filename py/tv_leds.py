@@ -127,4 +127,11 @@ if num_args > 0:
     elif command == 'fill':
         ambient_leds.fill(100,0,0)
 
+    elif command == 'run':
+        if ambient_leds.setup():
+            print('Setup Complete')
+
+        status = True
+        while status:
+            status = ambient_leds.task()
 
