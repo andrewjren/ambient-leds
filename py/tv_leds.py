@@ -1,6 +1,9 @@
 import board
 import neopixel
+import cv2
 import sys
+import time
+import numpy as np
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -10,8 +13,8 @@ class AmbientLEDs:
         # Configuration Fields
 
         # LED Config
-        self.num_ver = 5  # number of LEDs on left/right side
-        self.num_hor = 10 # number of LEDs on top/bottom side
+        self.num_ver = 20  # number of LEDs on left/right side
+        self.num_hor = 30 # number of LEDs on top/bottom side
         self.num_leds = 2 * (self.num_ver + self.num_hor) # total number of LEDs
 
         # gamma shift table
@@ -35,6 +38,13 @@ class AmbientLEDs:
         # Pi Config
         self.led_port = board.D18 # raspberry pi port that LEDs are controlled off of
         self.pixels = neopixel.NeoPixel(self.led_port, self.num_leds) # object for controlling LED strips
+
+        # Camera Config
+        self.frame_width = 640
+        self.frame_height = 480
+        self.cap = cv2.VideoCapture(0)
+        self.cap.set(3, self.frame_width)
+        self.cap.set(4, self.frame_height)
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -66,6 +76,38 @@ class AmbientLEDs:
     def clear_leds(self):
         self.pixels.fill((0,0,0))
 
+    # 
+    def setup(self):
+        if self.cap.isOpened():
+            time.sleep(2)
+            return True
+        else:
+            print('Failed Camera Capture Opening')
+            return False
+
+    def task(self):
+        # read camera
+        success, img = self.cap.read()
+        if success:
+            # sample image pixels at key points
+            sample_points_idx_1 = np.linspace(0,self.frame_height-1,self.num_ver,dtype=np.int16)
+            
+            key_points = img[sample_points_idx_1,320,:]
+
+            led_idx = 0
+            for kp in key_points:
+                self.set_led(led_idx,kp[2],kp[1],kp[0])
+                led_idx = led_idx + 1
+
+            return True 
+        else:
+            print('Failed Camera Frame Read')
+            return False 
+
+
+
+
+
 
 # start processing here
 ambient_leds = AmbientLEDs()
@@ -85,4 +127,4 @@ if num_args > 0:
     elif command == 'fill':
         ambient_leds.fill(100,0,0)
 
-        
+
