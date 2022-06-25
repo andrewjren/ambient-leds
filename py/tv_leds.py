@@ -226,14 +226,19 @@ if num_args > 1:
                     g = I - I*S 
                     b = I + I*S*np.cos(H-240)/np.cos(300-H) 
 
-                ambient_leds.fill(r,g,b)
-
+                #ambient_leds.fill(int(r),int(g),int(b))
+                print('hsi:{0},{1},{2}'.format(H,S,I))
+                print('rgb:{0},{1},{2}'.format(r,g,b))
                 count = count + 1
+
+                duration = datetime.now() - start_time
+                remaining_time = duration.microseconds
+
 
                 if count > period:
                     done = True
 
-
+                time.sleep(remaining_time / 100000)
 
 else:
     print('No arguments passed')
