@@ -1,8 +1,10 @@
+from msilib.schema import InstallExecuteSequence
 import board
 import neopixel
 import cv2
 import sys
 import time
+from datetime import datetime
 import numpy as np
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
@@ -139,6 +141,97 @@ if num_args > 1:
         status = True
         while status:
             status = ambient_leds.task()
+
+    elif command == 'mood':
+        
+        # status and fields to track while running
+        status = True 
+        done = True
+
+        # period
+        period = 20 # seconds
+        count = 0
+
+        # track hue, saturation, and intensity values over time
+        hue, saturation = 0 
+        intensity = 240 # hardcode intensity for simplicity
+
+        step_hue, step_saturation = 0
+        curr_hue, curr_saturation = 0
+
+        # start loop
+        while status:
+            # get current time
+            start_time = datetime.now()
+
+            # if on the last cycle, the target value was reached
+            if done:
+                # get random values for hue and saturation
+                new_hue = np.random.randint(0,359)
+                new_saturation = np.random.rand()
+
+                # determine step size for current hue and saturation values
+                if new_hue - hue > 180: # set step to negative
+                    step_hue = (hue - new_hue)/period
+                else: # set step to positive
+                    step_hue = (new_hue - hue)/period
+
+                step_saturation = (new_saturation - saturation)/period
+
+                # load new values
+                saturation = new_saturation
+                hue = new_hue
+
+                done = False
+                count = 0
+
+            else: # run step
+                curr_saturation = curr_saturation + step_saturation
+                curr_hue = (curr_hue + step_hue) % 360
+
+                H = curr_hue
+                S = curr_saturation
+                I = intensity
+
+                # convert HSI to RGB
+                if H == 0:
+                    r = I + 2*I*S
+                    g = I - I*S
+                    b = I - I*S
+
+                elif H < 120:
+                    r = I + I*S*np.cos(H)/np.cos(60-H)
+                    g = I + I*S*(1-np.cos(H)/np.cos(60-H))
+                    b = I - I*S
+
+                elif H == 120:
+                    r = I - I*S
+                    g = I + 2*I*S
+                    b = I - I*S 
+
+                elif H < 240:
+                    r = I - I*S 
+                    g = I + I*S*np.cos(H-120)/np.cos(180-H)
+                    b = I + I*S*(1 - np.cos(H-120)/np.cos(180-H))
+
+                elif H == 240:
+                    r = I - I*S 
+                    g = I - I*S 
+                    b = I + 2*I*S 
+
+                else:
+                    r = I + I*S*(1 - np.cos(H-240)/np.cos(300-H))
+                    g = I - I*S 
+                    b = I + I*S*np.cos(H-240)/np.cos(300-H) 
+
+                ambient_leds.fill(r,g,b)
+
+                count = count + 1
+
+                if count > period:
+                    done = True
+
+
 
 else:
     print('No arguments passed')
