@@ -154,7 +154,7 @@ if num_args > 1:
         # track hue, saturation, and intensity values over time
         hue = 0
         saturation = 0 
-        intensity = 240 # hardcode intensity for simplicity
+        intensity = 0.9 # hardcode intensity for simplicity
 
         step_hue = 0
         step_saturation = 0
@@ -226,7 +226,11 @@ if num_args > 1:
                     g = I - I*S 
                     b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
 
-                #ambient_leds.fill(int(r),int(g),int(b))
+                max_rgb = np.max([r,g,b])
+                r = 255 * r/max_rgb
+                g = 255 * g/max_rgb
+                b = 255 * b/max_rgb
+                ambient_leds.fill(int(r),int(g),int(b))
                 print('hsi:{0},{1},{2}'.format(H,S,I))
                 print('rgb:{0},{1},{2}'.format(r,g,b))
                 count = count + 1
@@ -234,11 +238,10 @@ if num_args > 1:
                 duration = datetime.now() - start_time
                 remaining_time = duration.microseconds
 
-
                 if count > period:
                     done = True
 
-                time.sleep(remaining_time / 100000)
+                time.sleep(1)
 
 else:
     print('No arguments passed')
