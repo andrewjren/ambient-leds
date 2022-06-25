@@ -149,6 +149,9 @@ if num_args > 1:
 
         # period
         period = 20 # seconds
+        time_step = 0.20 # seconds
+        time_step_us = time_step * 1000000
+        period_steps = int(period / time_step)
         count = 0
 
         # track hue, saturation, and intensity values over time
@@ -231,17 +234,18 @@ if num_args > 1:
                 g = 255 * g/max_rgb
                 b = 255 * b/max_rgb
                 ambient_leds.fill(int(r),int(g),int(b))
-                print('hsi:{0},{1},{2}'.format(H,S,I))
-                print('rgb:{0},{1},{2}'.format(r,g,b))
+                #print('hsi:{0},{1},{2}'.format(H,S,I))
+                #print('rgb:{0},{1},{2}'.format(r,g,b))
                 count = count + 1
 
-                duration = datetime.now() - start_time
-                remaining_time = duration.microseconds
-
-                if count > period:
+                if count > period_steps:
                     done = True
 
-                time.sleep(1)
+                duration = datetime.now() - start_time
+                remaining_time = time_step_us - duration.microseconds
+                print('remaining: {0}'.format(remaining_time))
+
+                time.sleep(remaining_time)
 
 else:
     print('No arguments passed')
