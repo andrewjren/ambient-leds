@@ -6,6 +6,49 @@ import time
 from datetime import datetime
 import numpy as np
 
+def hsi2rgb(H,S,I):
+    H = curr_hue
+    S = curr_saturation
+    I = intensity
+
+    # convert HSI to RGB
+    if H == 0:
+        r = I + 2*I*S
+        g = I - I*S
+        b = I - I*S
+
+    elif H < 120:
+        r = I + I*S*np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180)
+        g = I + I*S*(1-np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180))
+        b = I - I*S
+
+    elif H == 120:
+        r = I - I*S
+        g = I + 2*I*S
+        b = I - I*S 
+
+    elif H < 240:
+        r = I - I*S 
+        g = I + I*S*np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180)
+        b = I + I*S*(1 - np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180))
+
+    elif H == 240:
+        r = I - I*S 
+        g = I - I*S 
+        b = I + 2*I*S 
+
+    else:
+        r = I + I*S*(1 - np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180))
+        g = I - I*S 
+        b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
+
+    max_rgb = np.max([r,g,b])
+    r = 255 * r/max_rgb
+    g = 255 * g/max_rgb
+    b = 255 * b/max_rgb
+
+    return int(r), int(g), int(b)
+
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
 
@@ -177,11 +220,11 @@ if num_args > 1:
 
                 # determine step size for current hue and saturation values
                 if new_hue - hue > 180: # set step to negative
-                    step_hue = (hue - new_hue)/period
+                    step_hue = (hue - new_hue)/period_steps
                 else: # set step to positive
-                    step_hue = (new_hue - hue)/period
+                    step_hue = (new_hue - hue)/period_steps
 
-                step_saturation = (new_saturation - saturation)/period
+                step_saturation = (new_saturation - saturation)/period_steps
 
                 # load new values
                 saturation = new_saturation
@@ -198,42 +241,8 @@ if num_args > 1:
                 S = curr_saturation
                 I = intensity
 
-                # convert HSI to RGB
-                if H == 0:
-                    r = I + 2*I*S
-                    g = I - I*S
-                    b = I - I*S
-
-                elif H < 120:
-                    r = I + I*S*np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180)
-                    g = I + I*S*(1-np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180))
-                    b = I - I*S
-
-                elif H == 120:
-                    r = I - I*S
-                    g = I + 2*I*S
-                    b = I - I*S 
-
-                elif H < 240:
-                    r = I - I*S 
-                    g = I + I*S*np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180)
-                    b = I + I*S*(1 - np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180))
-
-                elif H == 240:
-                    r = I - I*S 
-                    g = I - I*S 
-                    b = I + 2*I*S 
-
-                else:
-                    r = I + I*S*(1 - np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180))
-                    g = I - I*S 
-                    b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
-
-                max_rgb = np.max([r,g,b])
-                r = 255 * r/max_rgb
-                g = 255 * g/max_rgb
-                b = 255 * b/max_rgb
-                ambient_leds.fill(int(r),int(g),int(b))
+                r,g,b = hsi2rgb(H,S,I)
+                ambient_leds.fill(r,g,b)
                 #print('hsi:{0},{1},{2}'.format(H,S,I))
                 #print('rgb:{0},{1},{2}'.format(r,g,b))
                 count = count + 1
