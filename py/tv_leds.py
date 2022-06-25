@@ -191,8 +191,8 @@ if num_args > 1:
         done = True
 
         # period
-        period = 20 # seconds
-        time_step = 0.20 # seconds
+        period = 15 # seconds
+        time_step = 0.10 # seconds
         time_step_us = time_step * 1000000
         period_steps = int(period / time_step)
         count = 0
@@ -252,7 +252,7 @@ if num_args > 1:
 
                 duration = datetime.now() - start_time
                 remaining_time = time_step_us - duration.microseconds
-                print('remaining: {0}'.format(remaining_time))
+                #print('remaining: {0}'.format(remaining_time))
 
                 time.sleep(remaining_time/1000000)
 
