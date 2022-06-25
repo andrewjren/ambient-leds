@@ -152,11 +152,14 @@ if num_args > 1:
         count = 0
 
         # track hue, saturation, and intensity values over time
-        hue, saturation = 0 
+        hue = 0
+        saturation = 0 
         intensity = 240 # hardcode intensity for simplicity
 
-        step_hue, step_saturation = 0
-        curr_hue, curr_saturation = 0
+        step_hue = 0
+        step_saturation = 0
+        curr_hue = 0
+        curr_saturation = 0
 
         # start loop
         while status:
