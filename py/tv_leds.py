@@ -245,7 +245,7 @@ if num_args > 1:
                 remaining_time = time_step_us - duration.microseconds
                 print('remaining: {0}'.format(remaining_time))
 
-                time.sleep(remaining_time)
+                time.sleep(remaining_time/1000000)
 
 else:
     print('No arguments passed')
