@@ -1,4 +1,3 @@
-from msilib.schema import InstallExecuteSequence
 import board
 import neopixel
 import cv2
