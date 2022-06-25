@@ -105,16 +105,12 @@ class AmbientLEDs:
             return False 
 
 
-
-
-
-
 # start processing here
 ambient_leds = AmbientLEDs()
 
 num_args = len(sys.argv)
 
-if num_args > 0:
+if num_args > 1:
     command = sys.argv[1]
 
     if command == 'test':
@@ -125,7 +121,16 @@ if num_args > 0:
         ambient_leds.clear_leds()
 
     elif command == 'fill':
-        ambient_leds.fill(100,0,0)
+        # detect arguments from command line and fill as that color
+        if num_args >= 5:
+            i_red = int(sys.argv[2])
+            i_green = int(sys.argv[3])
+            i_blue = int(sys.argv[4])
+
+            ambient_leds.fill(i_red,i_green,i_blue)
+        # just fill with red
+        else:
+            ambient_leds.fill(255,0,0)
 
     elif command == 'run':
         if ambient_leds.setup():
@@ -135,3 +140,5 @@ if num_args > 0:
         while status:
             status = ambient_leds.task()
 
+else:
+    print('No arguments passed')
