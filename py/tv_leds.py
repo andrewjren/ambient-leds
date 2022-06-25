@@ -202,8 +202,8 @@ if num_args > 1:
                     b = I - I*S
 
                 elif H < 120:
-                    r = I + I*S*np.cos(H)/np.cos(60-H)
-                    g = I + I*S*(1-np.cos(H)/np.cos(60-H))
+                    r = I + I*S*np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180)
+                    g = I + I*S*(1-np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180))
                     b = I - I*S
 
                 elif H == 120:
@@ -213,8 +213,8 @@ if num_args > 1:
 
                 elif H < 240:
                     r = I - I*S 
-                    g = I + I*S*np.cos(H-120)/np.cos(180-H)
-                    b = I + I*S*(1 - np.cos(H-120)/np.cos(180-H))
+                    g = I + I*S*np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180)
+                    b = I + I*S*(1 - np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180))
 
                 elif H == 240:
                     r = I - I*S 
@@ -222,9 +222,9 @@ if num_args > 1:
                     b = I + 2*I*S 
 
                 else:
-                    r = I + I*S*(1 - np.cos(H-240)/np.cos(300-H))
+                    r = I + I*S*(1 - np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180))
                     g = I - I*S 
-                    b = I + I*S*np.cos(H-240)/np.cos(300-H) 
+                    b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
 
                 #ambient_leds.fill(int(r),int(g),int(b))
                 print('hsi:{0},{1},{2}'.format(H,S,I))
