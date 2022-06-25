@@ -49,6 +49,27 @@ def hsi2rgb(H,S,I):
 
     return int(r), int(g), int(b)
 
+def wheel(pos):
+    # Input a value 0 to 255 to get a color value.
+    # The colours are a transition r - g - b - back to r.
+    if pos < 0 or pos > 255:
+        r = g = b = 0
+    elif pos < 85:
+        r = int(pos * 3)
+        g = int(255 - pos * 3)
+        b = 0
+    elif pos < 170:
+        pos -= 85
+        r = int(255 - pos * 3)
+        g = 0
+        b = int(pos * 3)
+    else:
+        pos -= 170
+        r = 0
+        g = int(pos * 3)
+        b = int(255 - pos * 3)
+    return (r, g, b)
+
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
 
@@ -58,8 +79,8 @@ class AmbientLEDs:
 
         # LED Config
         self.num_ver = 20  # number of LEDs on left/right side
-        self.num_hor = 30 # number of LEDs on top/bottom side
-        self.num_leds = 2 * (self.num_ver + self.num_hor) # total number of LEDs
+        self.num_hor = 35 # number of LEDs on top/bottom side
+        self.num_leds = 2 * self.num_ver + self.num_hor # total number of LEDs
 
         # gamma shift table
         self.gamma_table = [  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -256,5 +277,13 @@ if num_args > 1:
 
                 time.sleep(remaining_time/1000000)
 
+    elif command == 'rainbow':
+        for j in range(255):
+            for i in range(ambient_leds.num_leds):
+                pixel_index = (i * 256 // ambient_leds.num_leds) + j
+                r,g,b = wheel(pixel_index & 255)
+                ambient_leds.set_led(i,r,g,b)
+            
+            time.sleep(0.10)
 else:
     print('No arguments passed')
