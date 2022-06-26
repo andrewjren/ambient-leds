@@ -174,7 +174,7 @@ class AmbientLEDs:
 
         # get time step in us, determine number of steps per each period
         time_step_us = time_step_s * 1000000
-        period_steps = int(period / time_step)
+        period_steps = int(period / time_step_s)
         count = 0
 
         # track hue, saturation, and intensity values over time
