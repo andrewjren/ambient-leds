@@ -7,9 +7,6 @@ from datetime import datetime
 import numpy as np
 
 def hsi2rgb(H,S,I):
-    H = curr_hue
-    S = curr_saturation
-    I = intensity
 
     # convert HSI to RGB
     if H == 0:
@@ -169,6 +166,71 @@ class AmbientLEDs:
             print('Failed Camera Frame Read')
             return False 
 
+    def mood(self, period = 15, time_step_s = 0.10):
+        
+        # status and fields to track while running
+        status = True 
+        done = True
+
+        # get time step in us, determine number of steps per each period
+        time_step_us = time_step_s * 1000000
+        period_steps = int(period / time_step)
+        count = 0
+
+        # track hue, saturation, and intensity values over time
+        curr_hue = 0         # 0 to 359 degrees
+        curr_saturation = 0  # 0 to 255
+        intensity = 0.9      # 0 to 1, hardcode intensity for simplicity
+
+        # track current values and delta values
+        step_hue = 0
+        step_saturation = 0
+
+        # start loop
+        while status:
+            # get current time
+            start_time = datetime.now()
+
+            # if on the last cycle, the target value was reached
+            if done:
+                # get random values for hue and saturation
+                new_hue = np.random.randint(0,359)
+                new_saturation = np.random.rand()
+
+                # find "shortest path" to new hue
+                # determine step size for current hue and saturation values
+                if (new_hue - curr_hue) % 360 > 180: # change hue by decreasing hue degree
+                    step_hue = (360 - ((new_hue - curr_hue) % 360))/period_steps
+                else: # change hue by increasing hue degree
+                    step_hue = ((new_hue - curr_hue) % 360)/period_steps
+
+                step_saturation = (new_saturation - curr_saturation)/period_steps
+
+                done = False
+                count = 0
+
+            # run step
+            else:
+                # change hue and saturation value by step
+                curr_saturation = curr_saturation + step_saturation
+                curr_hue = (curr_hue + step_hue) % 360
+
+                # convert to rgb, then fill leds
+                r,g,b = hsi2rgb(curr_hue,curr_saturation,intensity)
+                self.fill(r,g,b)
+                count = count + 1
+
+                # if count is reached, get new HSI target value
+                if count > period_steps:
+                    done = True
+
+                # get time elapsed and sleep for remaining time to match period
+                duration = datetime.now() - start_time
+                remaining_time = time_step_us - duration.microseconds
+
+                time.sleep(remaining_time/1000000)
+
+
 
 # start processing here
 ambient_leds = AmbientLEDs()
@@ -206,76 +268,7 @@ if num_args > 1:
             status = ambient_leds.task()
 
     elif command == 'mood':
-        
-        # status and fields to track while running
-        status = True 
-        done = True
-
-        # period
-        period = 15 # seconds
-        time_step = 0.10 # seconds
-        time_step_us = time_step * 1000000
-        period_steps = int(period / time_step)
-        count = 0
-
-        # track hue, saturation, and intensity values over time
-        hue = 0
-        saturation = 0 
-        intensity = 0.9 # hardcode intensity for simplicity
-
-        step_hue = 0
-        step_saturation = 0
-        curr_hue = 0
-        curr_saturation = 0
-
-        # start loop
-        while status:
-            # get current time
-            start_time = datetime.now()
-
-            # if on the last cycle, the target value was reached
-            if done:
-                # get random values for hue and saturation
-                new_hue = np.random.randint(0,359)
-                new_saturation = np.random.rand()
-
-                # determine step size for current hue and saturation values
-                if new_hue - hue > 180: # set step to negative
-                    step_hue = (hue - new_hue)/period_steps
-                else: # set step to positive
-                    step_hue = (new_hue - hue)/period_steps
-
-                step_saturation = (new_saturation - saturation)/period_steps
-
-                # load new values
-                saturation = new_saturation
-                hue = new_hue
-
-                done = False
-                count = 0
-
-            else: # run step
-                curr_saturation = curr_saturation + step_saturation
-                curr_hue = (curr_hue + step_hue) % 360
-
-                H = curr_hue
-                S = curr_saturation
-                I = intensity
-
-                r,g,b = hsi2rgb(H,S,I)
-                ambient_leds.fill(r,g,b)
-                #print('hsi:{0},{1},{2}'.format(H,S,I))
-                #print('rgb:{0},{1},{2}'.format(r,g,b))
-                count = count + 1
-
-                if count > period_steps:
-                    done = True
-
-                duration = datetime.now() - start_time
-                remaining_time = time_step_us - duration.microseconds
-                #print('remaining: {0}'.format(remaining_time))
-
-                time.sleep(remaining_time/1000000)
+        ambient_leds.mood()
 
     elif command == 'rainbow':
         for j in range(255):
