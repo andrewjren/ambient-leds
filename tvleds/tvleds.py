@@ -47,6 +47,9 @@ class AmbientLEDs:
         self.cap.set(3, self.frame_width)
         self.cap.set(4, self.frame_height)
 
+        # Flask Config
+        self.hex_color = "#0000FF"
+
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
         red = self.gamma_table[in_red]

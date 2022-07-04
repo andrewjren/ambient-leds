@@ -10,13 +10,13 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
-    return render_template('base.html', color=color)
+    return render_template('base.html', color=ambient_leds.hex_color)
 
 @app.route("/fill", methods=['POST'])
 def fill_color():
-    color = request.form.get('fill_rgb')
+    ambient_leds.hex_color = request.form.get('fill_rgb')
     #print(color)
-    r,g,b = AmbientLEDs.hex2rgb(color)
+    r,g,b = AmbientLEDs.hex2rgb(ambient_leds.hex_color)
     print('RGB: {0},{1},{2}'.format(r,g,b))
-    ambient_leds.fill(i_red,i_green,i_blue)
+    ambient_leds.fill(r,g,b)
     return redirect('/')
