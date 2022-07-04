@@ -1,0 +1,19 @@
+<!doctype html>
+<title>LED Control</title>
+<!--
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+-->
+<nav>
+  <h1>Color Select</h1>
+</nav>
+<section class="content">
+  <header>
+  </header>
+  <body>
+    <form action="/fill" method="post">
+      <label for="fill_rgb">Fill Color:</label>
+      <input name="fill_rgb" type="color" class="color" value="{{ color }}">
+      <input type="submit" value="Update">
+    </form>
+  </body>
+</section>
