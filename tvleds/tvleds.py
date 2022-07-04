@@ -216,9 +216,10 @@ class AmbientLEDs:
     # hex rgb string has format: #000000
     @staticmethod
     def hex2rgb(hex_string):
-        r = int(hex_string[1:2], 16)
-        g = int(hex_string[3:4], 16)
-        b = int(hex_string[5:6], 16)
+        r = int(hex_string[1:3], 16)
+        #print('hex r value = {0}, true r value = {1}'.format(hex_string[1:2],r))
+        g = int(hex_string[3:5], 16)
+        b = int(hex_string[5:7], 16)
 
         return r,g,b
 
