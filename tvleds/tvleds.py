@@ -5,7 +5,6 @@ import sys
 import time
 from datetime import datetime
 import numpy as np
-import utilities
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:

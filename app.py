@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, render_template, request, redirect
-from tvleds import tvleds, utilities
+from tvleds import AmbientLEDs
 
 # init AmbientLeds object
 ambient_leds = AmbientLEDs()
