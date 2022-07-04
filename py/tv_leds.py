@@ -258,6 +258,7 @@ if num_args > 1:
         # just fill with red
         else:
             ambient_leds.fill(255,0,0)
+        time.sleep(10)
 
     elif command == 'run':
         if ambient_leds.setup():
