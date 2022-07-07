@@ -116,7 +116,7 @@ class AmbientLEDs:
 
         # get time step in us, determine number of steps per each period
         time_step_us = time_step_s * 1000000
-        period_steps = int(period / time_step)
+        period_steps = int(period / time_step_us)
         count = 0
 
         # track hue, saturation, and intensity values over time
@@ -158,7 +158,7 @@ class AmbientLEDs:
                 curr_hue = (curr_hue + step_hue) % 360
 
                 # convert to rgb, then fill leds
-                r,g,b = hsi2rgb(curr_hue,curr_saturation,intensity)
+                r,g,b = self.hsi2rgb(curr_hue,curr_saturation,intensity)
                 self.fill(r,g,b)
                 count = count + 1
 
