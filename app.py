@@ -37,7 +37,7 @@ def task_mood(period = 15, time_step_s = 0.10):
     print('Beginning Mood Task...')
     
     # initialize mood mode
-    ambient_leds.init_mood(period, time_step_s)
+    ambient_leds.init_mood(period=period, time_step_s=time_step_s)
 
     # run task for mood
     while not stop_thread.is_set():

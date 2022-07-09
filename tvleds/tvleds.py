@@ -130,6 +130,8 @@ class AmbientLEDs:
 
         # other configuration
         self.curr_intensity = intensity
+
+        print('Initialize Mood mode with period = {0}, time step = {1}'.format(period,time_step_s))
         
     # step mood mode
     # meant to be a single step that is managed by another process
