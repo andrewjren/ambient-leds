@@ -59,6 +59,8 @@ class AmbientLEDs:
         self.curr_hue = 0         # 0 to 359 degrees
         self.curr_saturation = 0  # 0 to 255
         self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
+        self.step_hue = 0
+        self.step_saturation = 0
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -146,9 +148,9 @@ class AmbientLEDs:
             # find "shortest path" to new hue
             # determine step size for current hue and saturation values
             if (new_hue - self.curr_hue) % 360 > 180: # change hue by decreasing hue degree
-                step_hue = (360 - ((new_hue - self.curr_hue) % 360))/self.mood_period_steps
+                self.step_hue = (360 - ((new_hue - self.curr_hue) % 360))/self.mood_period_steps
             else: # change hue by increasing hue degree
-                step_hue = ((new_hue - self.curr_hue) % 360)/self.mood_period_steps
+                self.step_hue = ((new_hue - self.curr_hue) % 360)/self.mood_period_steps
 
             self.step_saturation = (new_saturation - self.curr_saturation)/self.mood_period_steps
 
@@ -159,7 +161,7 @@ class AmbientLEDs:
         else:
             # change hue and saturation value by step
             self.curr_saturation = self.curr_saturation + self.step_saturation
-            self.curr_hue = (self.curr_hue + step_hue) % 360
+            self.curr_hue = (self.curr_hue + self.step_hue) % 360
 
             # convert to rgb, then fill leds
             r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
