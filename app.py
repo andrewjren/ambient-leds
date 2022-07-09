@@ -67,7 +67,7 @@ def task_pulse(period_s = 1, time_step_s = 0.05):
         start_time = datetime.now()
 
         # take step of mood
-        ambient_leds.step_mood()
+        ambient_leds.step_pulse()
 
         # get time elapsed and sleep for remaining time to match period
         duration = datetime.now() - start_time
@@ -84,7 +84,6 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
         threads.append(t)
 
     elif task == 'pulse':
-        print('here!')
         t = threading.Thread(name='Pulse Thread', target=task_pulse, args=(1,0.05))
         t.start()
         threads.append(t)
