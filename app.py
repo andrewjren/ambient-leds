@@ -20,3 +20,8 @@ def fill_color():
     print('RGB: {0},{1},{2}'.format(r,g,b))
     ambient_leds.fill(r,g,b)
     return redirect('/')
+
+@app.route("/mood", methods=['POST'])
+def enable_mood():
+    print('Mood Lighting Enabled!')
+    return redirect('/')
