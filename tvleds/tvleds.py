@@ -206,8 +206,11 @@ class AmbientLEDs:
 
         self.curr_intensity = math.exp(-l*t)
 
+        print('Pulse HSI: {0},{1},{2}'.format(self.curr_hue,self.curr_saturation,self.curr_intensity))
+
         # convert to rgb, then fill leds
         r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
+        print('Pulse RGB: {0},{1},{2}'.format(r,g,b))
         self.fill(r,g,b)
 
         self.pulse_count = self.pulse_count + 1
