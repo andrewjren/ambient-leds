@@ -5,6 +5,7 @@ import sys
 import time
 from datetime import datetime
 import numpy as np
+from threading import Event
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -49,6 +50,15 @@ class AmbientLEDs:
 
         # Flask Config
         self.hex_color = "#0000FF"
+
+        # Mood Config
+        self.mood_cycle_done = True
+        self.mood_period_steps = 10
+        self.mood_count = 0
+        self.mood_time_step_us = 0
+        self.curr_hue = 0         # 0 to 359 degrees
+        self.curr_saturation = 0  # 0 to 255
+        self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -108,69 +118,55 @@ class AmbientLEDs:
             print('Failed Camera Frame Read')
             return False 
 
-    def mood(self, period = 15, time_step_s = 0.10):
-        
-        # status and fields to track while running
-        status = True 
-        done = True
+    # init mood mode 
+    def init_mood(self, period = 15, time_step_s = 0.10, intensity = 0.9):
+        # reset tracker for when current color cycle is done
+        self.mood_cycle_done = True
+        self.mood_count = 0
 
         # get time step in us, determine number of steps per each period
-        time_step_us = time_step_s * 1000000
-        period_steps = int(period / time_step_us)
-        count = 0
+        self.mood_time_step_us = time_step_s * 1000000
+        self.mood_period_steps = int(period / self.mood_time_step_us)
 
-        # track hue, saturation, and intensity values over time
-        curr_hue = 0         # 0 to 359 degrees
-        curr_saturation = 0  # 0 to 255
-        intensity = 0.9      # 0 to 1, hardcode intensity for simplicity
+        # other configuration
+        self.curr_intensity = intensity
+        
+    # step mood mode
+    # meant to be a single step that is managed by another process
+    def step_mood(self):
+    
+        # if on the last cycle, the target value was reached
+        if self.mood_cycle_done:
+            # get random values for hue and saturation
+            new_hue = np.random.randint(0,359)
+            new_saturation = np.random.rand()
 
-        # track current values and delta values
-        step_hue = 0
-        step_saturation = 0
+            # find "shortest path" to new hue
+            # determine step size for current hue and saturation values
+            if (new_hue - self.curr_hue) % 360 > 180: # change hue by decreasing hue degree
+                step_hue = (360 - ((new_hue - self.curr_hue) % 360))/self.mood_period_steps
+            else: # change hue by increasing hue degree
+                step_hue = ((new_hue - self.curr_hue) % 360)/self.mood_period_steps
 
-        # start loop
-        while status:
-            # get current time
-            start_time = datetime.now()
+            step_saturation = (new_saturation - self.curr_saturation)/self.mood_period_steps
 
-            # if on the last cycle, the target value was reached
-            if done:
-                # get random values for hue and saturation
-                new_hue = np.random.randint(0,359)
-                new_saturation = np.random.rand()
+            self.mood_cycle_done = False
+            self.mood_count = 0
 
-                # find "shortest path" to new hue
-                # determine step size for current hue and saturation values
-                if (new_hue - curr_hue) % 360 > 180: # change hue by decreasing hue degree
-                    step_hue = (360 - ((new_hue - curr_hue) % 360))/period_steps
-                else: # change hue by increasing hue degree
-                    step_hue = ((new_hue - curr_hue) % 360)/period_steps
+        # run step
+        else:
+            # change hue and saturation value by step
+            self.curr_saturation = self.curr_saturation + step_saturation
+            self.curr_hue = (self.curr_hue + step_hue) % 360
 
-                step_saturation = (new_saturation - curr_saturation)/period_steps
+            # convert to rgb, then fill leds
+            r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
+            self.fill(r,g,b)
+            self.mood_count = self.mood_count + 1
 
-                done = False
-                count = 0
-
-            # run step
-            else:
-                # change hue and saturation value by step
-                curr_saturation = curr_saturation + step_saturation
-                curr_hue = (curr_hue + step_hue) % 360
-
-                # convert to rgb, then fill leds
-                r,g,b = self.hsi2rgb(curr_hue,curr_saturation,intensity)
-                self.fill(r,g,b)
-                count = count + 1
-
-                # if count is reached, get new HSI target value
-                if count > period_steps:
-                    done = True
-
-                # get time elapsed and sleep for remaining time to match period
-                duration = datetime.now() - start_time
-                remaining_time = time_step_us - duration.microseconds
-
-                time.sleep(remaining_time/1000000)
+            # if count is reached, get new HSI target value
+            if self.mood_count > self.mood_period_steps:
+                self.mood_cycle_done = True
 
     @staticmethod
     def hsi2rgb(H,S,I):
