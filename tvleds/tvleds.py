@@ -126,7 +126,7 @@ class AmbientLEDs:
 
         # get time step in us, determine number of steps per each period
         self.mood_time_step_us = time_step_s * 1000000
-        self.mood_period_steps = int(period / self.mood_time_step_us)
+        self.mood_period_steps = int(period / time_step_s)
 
         # other configuration
         self.curr_intensity = intensity
