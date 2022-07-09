@@ -256,9 +256,9 @@ class AmbientLEDs:
             b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
 
         max_rgb = np.max([r,g,b])
-        r = 255 * r/max_rgb
-        g = 255 * g/max_rgb
-        b = 255 * b/max_rgb
+        r = max(255 * r/max_rgb,0)
+        g = max(255 * g/max_rgb,0)
+        b = max(255 * b/max_rgb,0)
 
         return int(r), int(g), int(b)
 
