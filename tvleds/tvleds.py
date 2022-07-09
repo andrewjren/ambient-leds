@@ -150,7 +150,7 @@ class AmbientLEDs:
             else: # change hue by increasing hue degree
                 step_hue = ((new_hue - self.curr_hue) % 360)/self.mood_period_steps
 
-            step_saturation = (new_saturation - self.curr_saturation)/self.mood_period_steps
+            self.step_saturation = (new_saturation - self.curr_saturation)/self.mood_period_steps
 
             self.mood_cycle_done = False
             self.mood_count = 0
@@ -158,7 +158,7 @@ class AmbientLEDs:
         # run step
         else:
             # change hue and saturation value by step
-            self.curr_saturation = self.curr_saturation + step_saturation
+            self.curr_saturation = self.curr_saturation + self.step_saturation
             self.curr_hue = (self.curr_hue + step_hue) % 360
 
             # convert to rgb, then fill leds
