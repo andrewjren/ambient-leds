@@ -55,6 +55,25 @@ def task_mood(period = 15, time_step_s = 0.10):
     
     print('Ending Mood Task...')
 
+def task_pulse(period_s = 1, time_step_s = 0.05):
+    global ambient_leds
+    print('Beginning Pulse Task...')
+
+    # initialize pulse mode
+    ambient_leds.init_pulse(period_s=period_s, time_step_s=time_step_s)
+
+    while not stop_thread.is_set():
+        # get current time
+        start_time = datetime.now()
+
+        # take step of mood
+        ambient_leds.step_mood()
+
+        # get time elapsed and sleep for remaining time to match period
+        duration = datetime.now() - start_time
+        remaining_time = ambient_leds.pulse_time_step_us - duration.microseconds
+
+        time.sleep(remaining_time/1000000)
 
 def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
     global threads
@@ -64,6 +83,8 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
         t.start()
         threads.append(t)
 
+    elif task == 'pulse':
+        t = threading.Thread(name='Pulse Thread', target=task_pulse)
     else:
         print('Task not defined!')
 
@@ -89,5 +110,14 @@ def enable_mood():
     print('Mood Lighting Enabled!')
 
     begin_task('mood')
+
+    return redirect('/')
+
+@app.route("/pulse", methods=['POST'])
+def enable_mood():
+    trigger_thread_stop()
+    print('Pulse Lighting Enabled!')
+
+    begin_task('pulse')
 
     return redirect('/')

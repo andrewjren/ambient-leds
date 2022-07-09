@@ -6,6 +6,7 @@ import time
 from datetime import datetime
 import numpy as np
 from threading import Event
+import math
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -51,16 +52,24 @@ class AmbientLEDs:
         # Flask Config
         self.hex_color = "#0000FF"
 
+        # Generic LED Values
+        self.curr_hue = 0         # 0 to 359 degrees
+        self.curr_saturation = 0  # 0 to 255
+        self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
+
         # Mood Config
         self.mood_cycle_done = True
         self.mood_period_steps = 10
         self.mood_count = 0
         self.mood_time_step_us = 0
-        self.curr_hue = 0         # 0 to 359 degrees
-        self.curr_saturation = 0  # 0 to 255
-        self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
         self.step_hue = 0
         self.step_saturation = 0
+
+        # Pulse Config
+        self.pulse_time_step_us = 0
+        self.pulse_period_steps = 0
+        self.pulse_period_s = 0
+        self.pulse_count = 0
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -171,6 +180,43 @@ class AmbientLEDs:
             # if count is reached, get new HSI target value
             if self.mood_count > self.mood_period_steps:
                 self.mood_cycle_done = True
+
+   # init pulse mode 
+    def init_pulse(self, period_s, time_step_s):
+
+        # get time step in us, determine number of steps per each period
+        self.pulse_period_s = period_s
+        self.pulse_time_step_us = time_step_s * 1000000
+        self.pulse_period_steps = int(period_s / time_step_s)
+
+        print('Initialize Pulse mode with period = {0}, time step = {1}'.format(period_s,time_step_s))
+
+    # step pulse mode
+    def step_pulse(self):
+
+        # temp: set hue and saturation
+        self.curr_hue = 0
+        self.curr_saturation = 255
+
+        # get current time t
+        t = self.pulse_time_step_us * self.pulse_count
+
+        # get lambda l, based on period of pulse
+        l = 2 / self.pulse_period_s
+
+        self.curr_intensity = math.exp(-l*t)
+
+        # convert to rgb, then fill leds
+        r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
+        self.fill(r,g,b)
+
+        self.pulse_count = self.pulse_count + 1
+
+        # if finished with pulse period
+        if self.pulse_count > self.pulse_period_steps:
+            self.pulse_count = 0
+
+
 
     @staticmethod
     def hsi2rgb(H,S,I):
