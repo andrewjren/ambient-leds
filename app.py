@@ -1,4 +1,5 @@
 import os
+import threading
 from threading import Thread, Event
 import time
 from datetime import datetime
@@ -28,9 +29,11 @@ def trigger_thread_stop():
     for t in threads:
         t.join()
 
-# task_mood manages the calls to ambient_leds.mood()
-def task_mood(ambient_leds, period = 15, time_step_s = 0.10):
+    stop_thread.clear()
 
+# task_mood manages the calls to ambient_leds.mood()
+def task_mood(period = 15, time_step_s = 0.10):
+    global ambient_leds
     print('Beginning Mood Task...')
     
     # initialize mood mode
@@ -50,9 +53,6 @@ def task_mood(ambient_leds, period = 15, time_step_s = 0.10):
 
         time.sleep(remaining_time/1000000)
     
-    # reset event
-    stop_thread.clear()
-
     print('Ending Mood Task...')
 
 
