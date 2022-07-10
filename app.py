@@ -26,7 +26,10 @@ def trigger_thread_stop():
     
     stop_thread.set()
 
-    for t in threads:
+    #for t in threads:
+    #    t.join()
+    while len(threads) > 0:
+        t = threads.pop()
         t.join()
 
     stop_thread.clear()
