@@ -3,6 +3,7 @@ import threading
 from threading import Thread, Event
 import time
 from datetime import datetime
+import picamera
 
 from flask import Flask, render_template, request, redirect
 from tvleds import AmbientLEDs, CameraOutput
@@ -83,12 +84,17 @@ def task_ambient():
     print('Beginning Ambient Task...')
 
     # initialize ambient mode
-    ambient_leds.init_ambient()
+    #ambient_leds.init_ambient()
 
-    while not stop_thread.is_set():
-        ambient_leds.step_ambient()
+    with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
+        camera.start_recording(ambient_leds.camera_output, format='rgb')
+        while not stop_thread.is_set():
+            ambient_leds.step_ambient()
 
-    ambient_leds.camera.stop_recording()
+        ambient_leds.camera.stop_recording()
+        pass
+
+    
 
 def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
     global threads
