@@ -62,7 +62,7 @@ class AmbientLEDs:
         self.frame_height = 480
         self.resolution = '{0:d}x{1:d}'.format(self.frame_width,self.frame_height)
         self.framerate = 24
-        self.camera = picamera.PiCamera(resolution='640x480', framerate=24)
+        #self.camera = picamera.PiCamera(resolution='640x480', framerate=24)
         self.camera_output = CameraOutput(self.frame_width, self.frame_height)
 
         # Flask Config
@@ -89,7 +89,7 @@ class AmbientLEDs:
 
         # Ambient Config
         self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
-        self.ambient_num_rois = self.ambient_rois.shape()[0]
+        self.ambient_num_rois = self.ambient_rois.shape[0]
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -254,14 +254,14 @@ class AmbientLEDs:
         for roi in self.ambient_rois:
             rgb = frame[roi[0],roi[1],:]
 
-            rgb_values.append(int(rgb))
+            rgb_values.append(rgb)
 
-        leds_per_roi = int(self.num_leds/self.ambient_num_rois)
+        leds_per_roi = math.ceil(self.num_leds/self.ambient_num_rois)
 
         for led_idx in range(self.num_leds):
             roi_idx = math.floor(led_idx/leds_per_roi)
             rgb = rgb_values[roi_idx]
-            self.set_led(led_idx, rgb[0], rgb[1], rgb[2])
+            self.set_led(led_idx, int(rgb[0]), int(rgb[1]), int(rgb[2]))
 
 
 

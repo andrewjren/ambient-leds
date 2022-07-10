@@ -108,6 +108,11 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
         t = threading.Thread(name='Pulse Thread', target=task_pulse, args=(1,0.05))
         t.start()
         threads.append(t)
+
+    elif task == 'ambient':
+        t = threading.Thread(name='Ambient Thread', target=task_ambient)
+        t.start()
+        threads.append(t)
     else:
         print('Task not defined!')
 
@@ -150,5 +155,6 @@ def enable_ambient():
     trigger_thread_stop()
     print('Ambient Lighting Enabled!')
 
+    begin_task('ambient')
 
     return redirect('/')
