@@ -1,12 +1,27 @@
 import board
 import neopixel
-import cv2
+import picamera
 import sys
 import time
 from datetime import datetime
 import numpy as np
-from threading import Event
+from threading import Event, Lock
 import math
+
+# CameraOutput manages the output buffer of the camera
+class CameraOutput(object):
+    def __init__(self, frame_width, frame_height):
+        self.frame = np.zeros((frame_width,frame_height,3))
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+        self.lock = Lock()
+
+    def write(self, buf):
+        image = np.frombuffer(buf,dtype=np.uint8)
+
+        self.lock.acquire()
+        self.frame = image.reshape((self.frame_width,self.frame_height,3))
+        self.lock.release()
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -45,9 +60,10 @@ class AmbientLEDs:
         # Camera Config
         self.frame_width = 640
         self.frame_height = 480
-        self.cap = cv2.VideoCapture(0)
-        self.cap.set(3, self.frame_width)
-        self.cap.set(4, self.frame_height)
+        self.resolution = '{0}x{1}'.format(self.frame_width,self.frame_height)
+        self.framerate = 24
+        self.camera = picamera.PiCamera(resolution=self.resolution, framerate=self.framerate)
+        self.camera_output = CameraOutput(self.frame_width, self.frame_height)
 
         # Flask Config
         self.hex_color = "#0000FF"
@@ -70,6 +86,10 @@ class AmbientLEDs:
         self.pulse_period_steps = 0
         self.pulse_period_s = 0
         self.pulse_count = 0
+
+        # Ambient Config
+        self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
+        self.ambient_num_rois = self.ambient_rois.shape()[0]
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -218,6 +238,30 @@ class AmbientLEDs:
         # if finished with pulse period
         if self.pulse_count > self.pulse_period_steps:
             self.pulse_count = 0
+
+    # init ambient mode
+    def init_ambient(self):
+        self.camera.start_recording(self.camera_output, format='rgb')
+
+    # step ambient mode
+    def step_ambient(self):
+        self.camera_output.lock.acquire()
+        frame = self.camera_output.frame 
+        self.camera_output.lock.release()
+
+        rgb_values = []
+
+        for roi in self.ambient_rois:
+            rgb = frame[roi[0],roi[1],:]
+
+            rgb_values.append(int(rgb))
+
+        leds_per_roi = int(self.num_leds/self.ambient_num_rois)
+
+        for led_idx in range(self.num_leds):
+            roi_idx = math.floor(led_idx/leds_per_roi)
+            rgb = rgb_values[roi_idx]
+            self.set_led(led_idx, rgb[0], rgb[1], rgb[2])
 
 
 

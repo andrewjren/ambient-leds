@@ -78,6 +78,18 @@ def task_pulse(period_s = 1, time_step_s = 0.05):
 
         time.sleep(remaining_time/1000000)
 
+def task_ambient():
+    global ambient_leds
+    print('Beginning Ambient Task...')
+
+    # initialize ambient mode
+    ambient_leds.init_ambient()
+
+    while not stop_thread.is_set():
+        ambient_leds.step_ambient()
+
+    ambient_leds.camera.stop_recording()
+
 def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
     global threads
 
@@ -124,5 +136,13 @@ def enable_pulse():
     print('Pulse Lighting Enabled!')
 
     begin_task('pulse')
+
+    return redirect('/')
+
+@app.route("/ambient", methods=['POST'])
+def enable_ambient():
+    trigger_thread_stop()
+    print('Ambient Lighting Enabled!')
+
 
     return redirect('/')
