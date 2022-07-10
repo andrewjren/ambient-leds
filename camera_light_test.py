@@ -31,7 +31,7 @@ with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
             output.lock.release()
 
             r,g,b = frame[320,240,:]
-            ambient_leds.fill(r,g,b)
+            ambient_leds.fill(int(r),int(g),int(b))
 
     finally:
         camera.stop_recording()
