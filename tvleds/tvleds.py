@@ -60,9 +60,9 @@ class AmbientLEDs:
         # Camera Config
         self.frame_width = 640
         self.frame_height = 480
-        self.resolution = '{0}x{1}'.format(self.frame_width,self.frame_height)
+        self.resolution = '{0:d}x{1:d}'.format(self.frame_width,self.frame_height)
         self.framerate = 24
-        self.camera = picamera.PiCamera(resolution=self.resolution, framerate=self.framerate)
+        self.camera = picamera.PiCamera(resolution='640x480', framerate=24)
         self.camera_output = CameraOutput(self.frame_width, self.frame_height)
 
         # Flask Config

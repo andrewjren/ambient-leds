@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 from flask import Flask, render_template, request, redirect
-from tvleds import AmbientLEDs
+from tvleds import AmbientLEDs, CameraOutput
 
 # init AmbientLeds object
 ambient_leds = AmbientLEDs()
