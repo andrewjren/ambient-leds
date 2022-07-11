@@ -284,9 +284,7 @@ class AmbientLEDs:
             b = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             r = I * 3 - (g + b)
 
-        print('rgb: {0},{1},{2}'.format(r,g,b))
-
-        return int(r), int(g), int(b)
+        return int(255*r), int(255*g), int(255*b)
 
     # hex rgb string haS format: #000000
     @staticmethod
