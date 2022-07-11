@@ -271,17 +271,17 @@ class AmbientLEDs:
         # convert HSI to RGB
         if 0 <= H <= 120 :
             b = I * (1 - S)
-            r = I * (1 + (S * math.cos(math.radians(h)) / math.cos(math.radians(60) - math.radians(h))))
+            r = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             g = I * 3 - (r + b)
-        elif 120 < h <= 240:
-            h -= 120
+        elif 120 < H <= 240:
+            H -= 120
             r = I * (1 - s)
-            g = I * (1 + (S * math.cos(math.radians(h)) / math.cos(math.radians(60) - math.radians(h))))
+            g = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             b = 3 * I - (r + g)
-        elif 0 < h <= 360:
-            h -= 240
+        elif 0 < H <= 360:
+            H -= 240
             g = I * (1 - s)
-            b = I * (1 + (S * math.cos(math.radians(h)) / math.cos(math.radians(60) - math.radians(h))))
+            b = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             r = I * 3 - (g + b)
 
         return int(r), int(g), int(b)
