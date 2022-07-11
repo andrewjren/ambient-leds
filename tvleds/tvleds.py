@@ -219,12 +219,12 @@ class AmbientLEDs:
         self.curr_saturation = 255
 
         # get current time t
-        t = self.pulse_time_step_us * self.pulse_count
+        t_sec = self.pulse_time_step_us * self.pulse_count / 1000000
 
         # get lambda l, based on period of pulse
         l = 2 / self.pulse_period_s
 
-        self.curr_intensity = math.exp(-l*t)
+        self.curr_intensity = math.exp(-l*t_sec)
 
         print('Pulse HSI: {0},{1},{2}'.format(self.curr_hue,self.curr_saturation,self.curr_intensity))
 
