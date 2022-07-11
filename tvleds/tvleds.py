@@ -70,7 +70,7 @@ class AmbientLEDs:
 
         # Generic LED Values
         self.curr_hue = 0         # 0 to 359 degrees
-        self.curr_saturation = 0  # 0 to 255
+        self.curr_saturation = 0  # 0 to 1
         self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
 
         # Mood Config
@@ -216,7 +216,7 @@ class AmbientLEDs:
 
         # temp: set hue and saturation
         self.curr_hue = 0
-        self.curr_saturation = 255
+        self.curr_saturation = 1
 
         # get current time t
         t_sec = self.pulse_time_step_us * self.pulse_count / 1000000
@@ -283,6 +283,8 @@ class AmbientLEDs:
             g = I * (1 - s)
             b = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             r = I * 3 - (g + b)
+
+        print('rgb: {0},{1},{2}'.format(r,g,b))
 
         return int(r), int(g), int(b)
 
