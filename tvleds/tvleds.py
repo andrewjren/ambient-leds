@@ -226,7 +226,7 @@ class AmbientLEDs:
 
         self.curr_intensity = math.exp(-l*t_sec)
 
-        print('Pulse HSI: {0},{1},{2}'.format(self.curr_hue,self.curr_saturation,self.curr_intensity))
+        #print('Pulse HSI: {0},{1},{2}'.format(self.curr_hue,self.curr_saturation,self.curr_intensity))
 
         # convert to rgb, then fill leds
         r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
@@ -269,44 +269,24 @@ class AmbientLEDs:
     def hsi2rgb(H,S,I):
 
         # convert HSI to RGB
-        if H == 0:
-            r = I + 2*I*S
-            g = I - I*S
-            b = I - I*S
-
-        elif H < 120:
-            r = I + I*S*np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180)
-            g = I + I*S*(1-np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180))
-            b = I - I*S
-
-        elif H == 120:
-            r = I - I*S
-            g = I + 2*I*S
-            b = I - I*S 
-
-        elif H < 240:
-            r = I - I*S 
-            g = I + I*S*np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180)
-            b = I + I*S*(1 - np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180))
-
-        elif H == 240:
-            r = I - I*S 
-            g = I - I*S 
-            b = I + 2*I*S 
-
-        else:
-            r = I + I*S*(1 - np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180))
-            g = I - I*S 
-            b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
-
-        max_rgb = np.max([r,g,b])
-        r = max(255 * r/max_rgb,0)
-        g = max(255 * g/max_rgb,0)
-        b = max(255 * b/max_rgb,0)
+        if 0 <= H <= 120 :
+            b = I * (1 - S)
+            r = I * (1 + (S * math.cos(math.radians(h)) / math.cos(math.radians(60) - math.radians(h))))
+            g = I * 3 - (r + b)
+        elif 120 < h <= 240:
+            h -= 120
+            r = I * (1 - s)
+            g = I * (1 + (S * math.cos(math.radians(h)) / math.cos(math.radians(60) - math.radians(h))))
+            b = 3 * I - (r + g)
+        elif 0 < h <= 360:
+            h -= 240
+            g = I * (1 - s)
+            b = I * (1 + (S * math.cos(math.radians(h)) / math.cos(math.radians(60) - math.radians(h))))
+            r = I * 3 - (g + b)
 
         return int(r), int(g), int(b)
 
-    # hex rgb string has format: #000000
+    # hex rgb string haS format: #000000
     @staticmethod
     def hex2rgb(hex_string):
         r = int(hex_string[1:3], 16)

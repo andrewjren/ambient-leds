@@ -91,7 +91,7 @@ def task_ambient():
         while not stop_thread.is_set():
             ambient_leds.step_ambient()
 
-        ambient_leds.camera.stop_recording()
+        camera.stop_recording()
         pass
 
     
