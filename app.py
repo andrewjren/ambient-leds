@@ -121,7 +121,7 @@ def begin_task(task, mood_period = 15, pulse_period_s = 1):
 
 @app.route("/")
 def main():
-    return render_template('base.html', color=ambient_leds.hex_color, bpm=ambient_leds.pulse_bpm)
+    return render_template('base.html', color=ambient_leds.hex_color, bpm=ambient_leds.pulse_bpm, mood_period=ambient_leds.mood_period)
 
 @app.route("/fill", methods=['POST'])
 def fill_color():
