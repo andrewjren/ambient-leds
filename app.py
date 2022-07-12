@@ -146,7 +146,7 @@ def enable_mood():
 def enable_pulse():
     trigger_thread_stop()
     bpm = request.form.get('pulse_bpm')
-    pulse_period_s = 1 / (bpm / 60)
+    pulse_period_s = 1 / (int(bpm) / 60)
 
     print('Pulse Lighting Enabled!')
 
