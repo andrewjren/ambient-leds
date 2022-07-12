@@ -21,7 +21,8 @@
       <input name="enable_mood" type="submit" value="Enable">
     </form>
     <form action="/pulse" method="post">
-      <label for="enable_pulse">Enable Pulse Lighting:</label>
+      <label for="pulse_bpm">Enable Pulse Lighting:</label>
+      <input name="pulse_bpm" type="range" min="30" max="240" class="slider" value="{{ bpm }}">
       <input name="enable_pulse" type="submit" value="Enable">
     </form>
     <form action="/ambient" method="post">
