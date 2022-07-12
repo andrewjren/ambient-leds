@@ -105,7 +105,10 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10, pulse_period_s =
         threads.append(t)
 
     elif task == 'pulse':
-        pulse_step_s = pulse_period_s/10
+        if pulse_period_s > 0.5:
+            pulse_step_s = pulse_period_s/10
+        else:
+            pulse_step_s = pulse_step_s/5
         t = threading.Thread(name='Pulse Thread', target=task_pulse, args=(pulse_period_s,pulse_step_s))
         t.start()
         threads.append(t)
@@ -121,7 +124,7 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10, pulse_period_s =
 
 @app.route("/")
 def main():
-    return render_template('base.html', color=ambient_leds.hex_color)
+    return render_template('base.html', color=ambient_leds.hex_color, bpm=ambient_leds.pulse_bpm)
 
 @app.route("/fill", methods=['POST'])
 def fill_color():

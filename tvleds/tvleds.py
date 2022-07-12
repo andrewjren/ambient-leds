@@ -86,6 +86,7 @@ class AmbientLEDs:
         self.pulse_period_steps = 0
         self.pulse_period_s = 0
         self.pulse_count = 0
+        self.pulse_bpm = 60
 
         # Ambient Config
         self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
