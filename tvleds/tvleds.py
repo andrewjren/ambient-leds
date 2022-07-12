@@ -1,11 +1,27 @@
 import board
 import neopixel
-import cv2
+import picamera
 import sys
 import time
 from datetime import datetime
 import numpy as np
-from threading import Event
+from threading import Event, Lock
+import math
+
+# CameraOutput manages the output buffer of the camera
+class CameraOutput(object):
+    def __init__(self, frame_width, frame_height):
+        self.frame = np.zeros((frame_width,frame_height,3))
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+        self.lock = Lock()
+
+    def write(self, buf):
+        image = np.frombuffer(buf,dtype=np.uint8)
+
+        self.lock.acquire()
+        self.frame = image.reshape((self.frame_width,self.frame_height,3))
+        self.lock.release()
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -44,23 +60,38 @@ class AmbientLEDs:
         # Camera Config
         self.frame_width = 640
         self.frame_height = 480
-        self.cap = cv2.VideoCapture(0)
-        self.cap.set(3, self.frame_width)
-        self.cap.set(4, self.frame_height)
+        self.resolution = '{0:d}x{1:d}'.format(self.frame_width,self.frame_height)
+        self.framerate = 24
+        #self.camera = picamera.PiCamera(resolution='640x480', framerate=24)
+        self.camera_output = CameraOutput(self.frame_width, self.frame_height)
 
         # Flask Config
         self.hex_color = "#0000FF"
 
+        # Generic LED Values
+        self.curr_hue = 0         # 0 to 359 degrees
+        self.curr_saturation = 0  # 0 to 1
+        self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
+        self.time_step_s = 0.05
+        self.time_step_us = self.time_step_s * 1000000
+
         # Mood Config
         self.mood_cycle_done = True
+        self.mood_period = 10
         self.mood_period_steps = 10
         self.mood_count = 0
-        self.mood_time_step_us = 0
-        self.curr_hue = 0         # 0 to 359 degrees
-        self.curr_saturation = 0  # 0 to 255
-        self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
         self.step_hue = 0
         self.step_saturation = 0
+
+        # Pulse Config
+        self.pulse_period_steps = 0
+        self.pulse_period_s = 0
+        self.pulse_count = 0
+        self.pulse_bpm = 60
+
+        # Ambient Config
+        self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
+        self.ambient_num_rois = self.ambient_rois.shape[0]
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -121,19 +152,18 @@ class AmbientLEDs:
             return False 
 
     # init mood mode 
-    def init_mood(self, period = 15, time_step_s = 0.10, intensity = 0.9):
+    def init_mood(self, intensity = 0.9):
         # reset tracker for when current color cycle is done
         self.mood_cycle_done = True
         self.mood_count = 0
 
         # get time step in us, determine number of steps per each period
-        self.mood_time_step_us = time_step_s * 1000000
-        self.mood_period_steps = int(period / time_step_s)
+        self.mood_period_steps = int(self.mood_period / self.time_step_s)
 
         # other configuration
         self.curr_intensity = intensity
 
-        print('Initialize Mood mode with period = {0}, time step = {1}'.format(period,time_step_s))
+        print('Initialize Mood mode with period = {0}, time step = {1}'.format(self.mood_period,self.time_step_s))
         
     # step mood mode
     # meant to be a single step that is managed by another process
@@ -142,7 +172,7 @@ class AmbientLEDs:
         # if on the last cycle, the target value was reached
         if self.mood_cycle_done:
             # get random values for hue and saturation
-            new_hue = np.random.randint(0,359)
+            new_hue = np.random.randint(0,360)
             new_saturation = np.random.rand()
 
             # find "shortest path" to new hue
@@ -172,52 +202,97 @@ class AmbientLEDs:
             if self.mood_count > self.mood_period_steps:
                 self.mood_cycle_done = True
 
+   # init pulse mode 
+    def init_pulse(self, period_s):
+
+        # get time step in us, determine number of steps per each period
+        self.pulse_period_s = period_s
+        self.pulse_period_steps = int(period_s / self.time_step_s)
+        self.pulse_count = 0
+
+        # set random hue and saturation
+        self.curr_hue = np.random.randint(0,360)
+        self.curr_saturation = np.random.rand()
+
+        print('Initialize Pulse mode with period = {0}, time step = {1}'.format(period_s,self.time_step_s))
+
+    # step pulse mode
+    def step_pulse(self):
+
+        # get current time t
+        t_sec = self.time_step_s * self.pulse_count
+
+        # get lambda l, based on period of pulse
+        l = 2 / self.pulse_period_s
+
+        self.curr_intensity = math.exp(-l*t_sec)
+
+        # convert to rgb, then fill leds
+        r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
+        self.fill(r,g,b)
+
+        self.pulse_count = self.pulse_count + 1
+
+        # if finished with pulse period
+        if self.pulse_count > self.pulse_period_steps:
+            self.pulse_count = 0
+
+            # set random hue and saturation
+            self.curr_hue = np.random.randint(0,360)
+            self.curr_saturation = np.random.rand()
+
+    # init ambient mode
+    def init_ambient(self):
+        self.camera.start_recording(self.camera_output, format='rgb')
+
+    # step ambient mode
+    def step_ambient(self):
+        self.camera_output.lock.acquire()
+        frame = self.camera_output.frame 
+        self.camera_output.lock.release()
+
+        rgb_values = []
+
+        for roi in self.ambient_rois:
+            rgb = frame[roi[0],roi[1],:]
+
+            rgb_values.append(rgb)
+
+        leds_per_roi = math.ceil(self.num_leds/self.ambient_num_rois)
+
+        for led_idx in range(self.num_leds):
+            roi_idx = math.floor(led_idx/leds_per_roi)
+            rgb = rgb_values[roi_idx]
+            self.set_led(led_idx, int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+
+    # thanks to this stack overflow page
+    # https://stackoverflow.com/questions/71705531/python-hsi-to-rgb-conversion-not-what-i-expect
     @staticmethod
     def hsi2rgb(H,S,I):
 
         # convert HSI to RGB
-        if H == 0:
-            r = I + 2*I*S
-            g = I - I*S
-            b = I - I*S
+        if 0 <= H <= 120 :
+            b = I * (1 - S)
+            r = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
+            g = I * 3 - (r + b)
+        elif 120 < H <= 240:
+            H -= 120
+            r = I * (1 - S)
+            g = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
+            b = 3 * I - (r + g)
+        elif 0 < H <= 360:
+            H -= 240
+            g = I * (1 - S)
+            b = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
+            r = I * 3 - (g + b)
 
-        elif H < 120:
-            r = I + I*S*np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180)
-            g = I + I*S*(1-np.cos(H*np.pi/180)/np.cos((60-H)*np.pi/180))
-            b = I - I*S
-
-        elif H == 120:
-            r = I - I*S
-            g = I + 2*I*S
-            b = I - I*S 
-
-        elif H < 240:
-            r = I - I*S 
-            g = I + I*S*np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180)
-            b = I + I*S*(1 - np.cos((H-120)*np.pi/180)/np.cos((180-H)*np.pi/180))
-
-        elif H == 240:
-            r = I - I*S 
-            g = I - I*S 
-            b = I + 2*I*S 
-
-        else:
-            r = I + I*S*(1 - np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180))
-            g = I - I*S 
-            b = I + I*S*np.cos((H-240)*np.pi/180)/np.cos((300-H)*np.pi/180) 
-
-        max_rgb = np.max([r,g,b])
-        r = 255 * r/max_rgb
-        g = 255 * g/max_rgb
-        b = 255 * b/max_rgb
-
-        return int(r), int(g), int(b)
+        return int(np.clip(255*r,0,255)), int(np.clip(255*g,0,255)), int(np.clip(255*b,0,255))
 
     # hex rgb string has format: #000000
     @staticmethod
     def hex2rgb(hex_string):
         r = int(hex_string[1:3], 16)
-        #print('hex r value = {0}, true r value = {1}'.format(hex_string[1:2],r))
         g = int(hex_string[3:5], 16)
         b = int(hex_string[5:7], 16)
 
