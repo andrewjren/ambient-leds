@@ -105,10 +105,7 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10, pulse_period_s =
         threads.append(t)
 
     elif task == 'pulse':
-        if pulse_period_s > 0.5:
-            pulse_step_s = pulse_period_s/10
-        else:
-            pulse_step_s = pulse_step_s/5
+        pulse_step_s = 0.05
         t = threading.Thread(name='Pulse Thread', target=task_pulse, args=(pulse_period_s,pulse_step_s))
         t.start()
         threads.append(t)
@@ -148,8 +145,8 @@ def enable_mood():
 @app.route("/pulse", methods=['POST'])
 def enable_pulse():
     trigger_thread_stop()
-    bpm = request.form.get('pulse_bpm')
-    pulse_period_s = 1 / (int(bpm) / 60)
+    ambient_leds.pulse_bpm = request.form.get('pulse_bpm')
+    pulse_period_s = 1 / (int(ambient_leds.pulse_bpm) / 60)
 
     print('Pulse Lighting Enabled!')
 
