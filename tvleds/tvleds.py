@@ -208,15 +208,12 @@ class AmbientLEDs:
         self.pulse_period_s = period_s
         self.pulse_time_step_us = time_step_s * 1000000
         self.pulse_period_steps = int(period_s / time_step_s)
+        self.pulse_count = 0
 
         print('Initialize Pulse mode with period = {0}, time step = {1}'.format(period_s,time_step_s))
 
     # step pulse mode
     def step_pulse(self):
-
-        # temp: set hue and saturation
-        #self.curr_hue = 0
-        #self.curr_saturation = 1
 
         # set random hue and saturation
         self.curr_hue = np.random.randint(0,360)
@@ -235,6 +232,7 @@ class AmbientLEDs:
         self.fill(r,g,b)
 
         self.pulse_count = self.pulse_count + 1
+        print('count: {0}'.format(self.pulse_count))
 
         # if finished with pulse period
         if self.pulse_count > self.pulse_period_steps:
