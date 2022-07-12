@@ -72,17 +72,18 @@ class AmbientLEDs:
         self.curr_hue = 0         # 0 to 359 degrees
         self.curr_saturation = 0  # 0 to 1
         self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
+        self.time_step_s = 0.05
+        self.time_step_us = self.time_step_s * 1000000
 
         # Mood Config
         self.mood_cycle_done = True
+        self.mood_period = 10
         self.mood_period_steps = 10
         self.mood_count = 0
-        self.mood_time_step_us = 0
         self.step_hue = 0
         self.step_saturation = 0
 
         # Pulse Config
-        self.pulse_time_step_us = 0
         self.pulse_period_steps = 0
         self.pulse_period_s = 0
         self.pulse_count = 0
@@ -151,19 +152,18 @@ class AmbientLEDs:
             return False 
 
     # init mood mode 
-    def init_mood(self, period = 15, time_step_s = 0.10, intensity = 0.9):
+    def init_mood(self, intensity = 0.9):
         # reset tracker for when current color cycle is done
         self.mood_cycle_done = True
         self.mood_count = 0
 
         # get time step in us, determine number of steps per each period
-        self.mood_time_step_us = time_step_s * 1000000
-        self.mood_period_steps = int(period / time_step_s)
+        self.mood_period_steps = int(self.mood_period / self.time_step_s)
 
         # other configuration
         self.curr_intensity = intensity
 
-        print('Initialize Mood mode with period = {0}, time step = {1}'.format(period,time_step_s))
+        print('Initialize Mood mode with period = {0}, time step = {1}'.format(self.mood_period,self.time_step_s))
         
     # step mood mode
     # meant to be a single step that is managed by another process
@@ -203,25 +203,24 @@ class AmbientLEDs:
                 self.mood_cycle_done = True
 
    # init pulse mode 
-    def init_pulse(self, period_s, time_step_s):
+    def init_pulse(self, period_s):
 
         # get time step in us, determine number of steps per each period
         self.pulse_period_s = period_s
-        self.pulse_time_step_us = time_step_s * 1000000
-        self.pulse_period_steps = int(period_s / time_step_s)
+        self.pulse_period_steps = int(period_s / self.time_step_s)
         self.pulse_count = 0
 
         # set random hue and saturation
         self.curr_hue = np.random.randint(0,360)
         self.curr_saturation = np.random.rand()
 
-        print('Initialize Pulse mode with period = {0}, time step = {1}'.format(period_s,time_step_s))
+        print('Initialize Pulse mode with period = {0}, time step = {1}'.format(period_s,self.time_step_s))
 
     # step pulse mode
     def step_pulse(self):
 
         # get current time t
-        t_sec = self.pulse_time_step_us * self.pulse_count / 1000000
+        t_sec = self.time_step_s * self.pulse_count
 
         # get lambda l, based on period of pulse
         l = 2 / self.pulse_period_s
