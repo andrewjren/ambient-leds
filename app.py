@@ -105,7 +105,7 @@ def begin_task(task, mood_period = 15, mood_time_step_s = 0.10):
         threads.append(t)
 
     elif task == 'pulse':
-        t = threading.Thread(name='Pulse Thread', target=task_pulse, args=(1,0.05))
+        t = threading.Thread(name='Pulse Thread', target=task_pulse, args=(0.75,0.05))
         t.start()
         threads.append(t)
 

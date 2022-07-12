@@ -171,7 +171,7 @@ class AmbientLEDs:
         # if on the last cycle, the target value was reached
         if self.mood_cycle_done:
             # get random values for hue and saturation
-            new_hue = np.random.randint(0,359)
+            new_hue = np.random.randint(0,360)
             new_saturation = np.random.rand()
 
             # find "shortest path" to new hue
@@ -215,8 +215,12 @@ class AmbientLEDs:
     def step_pulse(self):
 
         # temp: set hue and saturation
-        self.curr_hue = 0
-        self.curr_saturation = 1
+        #self.curr_hue = 0
+        #self.curr_saturation = 1
+
+        # set random hue and saturation
+        self.curr_hue = np.random.randint(0,360)
+        self.curr_saturation = np.random.rand()
 
         # get current time t
         t_sec = self.pulse_time_step_us * self.pulse_count / 1000000
@@ -226,11 +230,8 @@ class AmbientLEDs:
 
         self.curr_intensity = math.exp(-l*t_sec)
 
-        #print('Pulse HSI: {0},{1},{2}'.format(self.curr_hue,self.curr_saturation,self.curr_intensity))
-
         # convert to rgb, then fill leds
         r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
-        print('Pulse RGB: {0},{1},{2}'.format(r,g,b))
         self.fill(r,g,b)
 
         self.pulse_count = self.pulse_count + 1
@@ -264,7 +265,8 @@ class AmbientLEDs:
             self.set_led(led_idx, int(rgb[0]), int(rgb[1]), int(rgb[2]))
 
 
-
+    # thanks to this stack overflow page
+    # https://stackoverflow.com/questions/71705531/python-hsi-to-rgb-conversion-not-what-i-expect
     @staticmethod
     def hsi2rgb(H,S,I):
 
@@ -286,11 +288,10 @@ class AmbientLEDs:
 
         return int(np.clip(255*r,0,255)), int(np.clip(255*g,0,255)), int(np.clip(255*b,0,255))
 
-    # hex rgb string haS format: #000000
+    # hex rgb string has format: #000000
     @staticmethod
     def hex2rgb(hex_string):
         r = int(hex_string[1:3], 16)
-        #print('hex r value = {0}, true r value = {1}'.format(hex_string[1:2],r))
         g = int(hex_string[3:5], 16)
         b = int(hex_string[5:7], 16)
 
