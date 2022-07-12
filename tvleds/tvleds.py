@@ -275,16 +275,16 @@ class AmbientLEDs:
             g = I * 3 - (r + b)
         elif 120 < H <= 240:
             H -= 120
-            r = I * (1 - s)
+            r = I * (1 - S)
             g = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             b = 3 * I - (r + g)
         elif 0 < H <= 360:
             H -= 240
-            g = I * (1 - s)
+            g = I * (1 - S)
             b = I * (1 + (S * math.cos(math.radians(H)) / math.cos(math.radians(60) - math.radians(H))))
             r = I * 3 - (g + b)
 
-        return int(255*r), int(255*g), int(255*b)
+        return int(np.clip(255*r,0,255)), int(np.clip(255*g,0,255)), int(np.clip(255*b,0,255))
 
     # hex rgb string haS format: #000000
     @staticmethod
