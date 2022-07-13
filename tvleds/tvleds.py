@@ -119,6 +119,8 @@ class AmbientLEDs:
         # set all pixels
         self.pixels.fill((red, green, blue))
 
+        self.pixels.show()
+
     # set all LEDs to be dark
     def clear_leds(self):
         self.pixels.fill((0,0,0))
@@ -228,6 +230,7 @@ class AmbientLEDs:
 
         # convert to rgb, then fill leds
         r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
+
         self.fill(r,g,b)
 
         self.pulse_count = self.pulse_count + 1
@@ -263,6 +266,8 @@ class AmbientLEDs:
             roi_idx = math.floor(led_idx/leds_per_roi)
             rgb = rgb_values[roi_idx]
             self.set_led(led_idx, int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+        self.pixels.show()
 
 
     # thanks to this stack overflow page
