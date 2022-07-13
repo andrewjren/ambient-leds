@@ -90,7 +90,7 @@ class AmbientLEDs:
         self.pulse_bpm = 60
 
         # Ambient Config
-        self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
+        #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
         self.ambient_num_rois = self.ambient_rois.shape[0]
 
     # gamma shift RGB values based on gamma table
@@ -325,3 +325,18 @@ class AmbientLEDs:
             b = int(255 - pos * 3)
         return (r, g, b)
 
+    def init_camera_rois(self):
+
+        # pick 4 points from image to be corners of rois
+        bottom_left = [160,360]
+        top_left = [160,120]
+        top_right = [480,180]
+        bottom_right = [480,300]
+
+        # determine rois
+        rois = np.linspace(bottom_left,top_left,self.num_ver)
+        rois.append(np.linspace(top_left,top_right,self.num_hor)[1:,])
+        rois.append(np.linspace(top_right,bottom_right,self.num_ver)[1:,])
+        
+        print('rois: {0}'.format(rois))
+        self.ambient_rois = rois
