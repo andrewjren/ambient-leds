@@ -55,7 +55,7 @@ class AmbientLEDs:
 
         # Pi Config
         self.led_port = board.D18 # raspberry pi port that LEDs are controlled off of
-        self.pixels = neopixel.NeoPixel(self.led_port, self.num_leds) # object for controlling LED strips
+        self.pixels = neopixel.NeoPixel(self.led_port, self.num_leds, auto_write=False) # object for controlling LED strips
 
         # Camera Config
         self.frame_width = 640
