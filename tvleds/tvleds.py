@@ -336,8 +336,8 @@ class AmbientLEDs:
 
         # determine rois
         rois = np.linspace(bottom_left,top_left,self.num_ver,dtype=np.int16)
-        rois.append(np.linspace(top_left,top_right,self.num_hor,dtype=np.int16))
-        rois.append(np.linspace(top_right,bottom_right,self.num_ver,dtype=np.int16))
+        rois = np.append(rois, np.linspace(top_left,top_right,self.num_hor,dtype=np.int16), axis=0)
+        rois = np.append(rois, np.linspace(top_right,bottom_right,self.num_ver,dtype=np.int16), axis=0)
         
-        print('rois: {0}, length: '.format(rois, rois.shape[0]))
+        print('rois: {0}, length: {1}'.format(rois, rois.shape[0]))
         self.ambient_rois = rois
