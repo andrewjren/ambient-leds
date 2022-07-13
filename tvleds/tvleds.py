@@ -91,6 +91,7 @@ class AmbientLEDs:
 
         # Ambient Config
         #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
+        self.init_camera_rois()
         self.ambient_num_rois = self.ambient_rois.shape[0]
 
     # gamma shift RGB values based on gamma table
@@ -334,9 +335,9 @@ class AmbientLEDs:
         bottom_right = [480,300]
 
         # determine rois
-        rois = np.linspace(bottom_left,top_left,self.num_ver)
-        rois.append(np.linspace(top_left,top_right,self.num_hor)[1:,])
-        rois.append(np.linspace(top_right,bottom_right,self.num_ver)[1:,])
+        rois = np.linspace(bottom_left,top_left,self.num_ver,dtype=np.int16)
+        rois.append(np.linspace(top_left,top_right,self.num_hor,dtype=np.int16))
+        rois.append(np.linspace(top_right,bottom_right,self.num_ver,dtype=np.int16))
         
-        print('rois: {0}'.format(rois))
+        print('rois: {0}, length: '.format(rois, rois.shape[0]))
         self.ambient_rois = rois
