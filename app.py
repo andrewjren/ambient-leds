@@ -87,6 +87,8 @@ def task_ambient():
     #ambient_leds.init_ambient()
 
     with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
+        camera.awb_mode='off'
+        camera.awb_gains=(1.64,1.08)
         camera.start_recording(ambient_leds.camera_output, format='rgb')
         while not stop_thread.is_set():
             ambient_leds.step_ambient()

@@ -329,10 +329,10 @@ class AmbientLEDs:
     def init_camera_rois(self):
 
         # pick 4 points from image to be corners of rois
-        bottom_left = [160,360]
-        top_left = [160,120]
-        top_right = [480,180]
-        bottom_right = [480,300]
+        bottom_left = [318,341]
+        top_left = [284,55]
+        top_right = [394,235]
+        bottom_right = [433,421]
 
         # determine rois
         rois = np.linspace(bottom_left,top_left,self.num_ver,dtype=np.int16)
