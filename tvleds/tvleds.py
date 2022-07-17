@@ -55,7 +55,7 @@ class AmbientLEDs:
 
         # Pi Config
         self.led_port = board.D18 # raspberry pi port that LEDs are controlled off of
-        self.pixels = neopixel.NeoPixel(self.led_port, self.num_leds) # object for controlling LED strips
+        self.pixels = neopixel.NeoPixel(self.led_port, self.num_leds, auto_write=False) # object for controlling LED strips
 
         # Camera Config
         self.frame_width = 640
@@ -90,7 +90,8 @@ class AmbientLEDs:
         self.pulse_bpm = 60
 
         # Ambient Config
-        self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
+        #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
+        self.init_camera_rois()
         self.ambient_num_rois = self.ambient_rois.shape[0]
 
     # gamma shift RGB values based on gamma table
@@ -118,6 +119,8 @@ class AmbientLEDs:
 
         # set all pixels
         self.pixels.fill((red, green, blue))
+
+        self.pixels.show()
 
     # set all LEDs to be dark
     def clear_leds(self):
@@ -228,6 +231,7 @@ class AmbientLEDs:
 
         # convert to rgb, then fill leds
         r,g,b = self.hsi2rgb(self.curr_hue,self.curr_saturation,self.curr_intensity)
+
         self.fill(r,g,b)
 
         self.pulse_count = self.pulse_count + 1
@@ -263,6 +267,8 @@ class AmbientLEDs:
             roi_idx = math.floor(led_idx/leds_per_roi)
             rgb = rgb_values[roi_idx]
             self.set_led(led_idx, int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+        self.pixels.show()
 
 
     # thanks to this stack overflow page
@@ -320,3 +326,18 @@ class AmbientLEDs:
             b = int(255 - pos * 3)
         return (r, g, b)
 
+    def init_camera_rois(self):
+
+        # pick 4 points from image to be corners of rois
+        bottom_left = [318,341]
+        top_left = [284,55]
+        top_right = [394,235]
+        bottom_right = [433,421]
+
+        # determine rois
+        rois = np.linspace(bottom_left,top_left,self.num_ver,dtype=np.int16)
+        rois = np.append(rois, np.linspace(top_left,top_right,self.num_hor,dtype=np.int16), axis=0)
+        rois = np.append(rois, np.linspace(top_right,bottom_right,self.num_ver,dtype=np.int16), axis=0)
+        
+        print('rois: {0}, length: {1}'.format(rois, rois.shape[0]))
+        self.ambient_rois = rois
