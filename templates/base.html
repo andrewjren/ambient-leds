@@ -23,7 +23,7 @@
   </header>
   <body>
     <form action="/mood" method="post">
-      <label for="mood_period">Transition Period Time [sec]:</label>
+      <label for="mood_period">Transition Time [sec]:</label>
       <input name="mood_period" id="mood_period_id" type="range" min="1" max="20" class="slider" oninput="mood_period_out_id.value = mood_period_id.value" value="{{ mood_period }}">
       <output name="mood_period_out" id="mood_period_out_id">{{ mood_period }}</output>
       <input name="enable_mood" type="submit" value="Enable">
