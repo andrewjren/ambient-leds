@@ -1,27 +1,11 @@
 import board
 import neopixel
 import picamera
-import sys
 import time
-from datetime import datetime
 import numpy as np
-from threading import Event, Lock
 import math
-
-# CameraOutput manages the output buffer of the camera
-class CameraOutput(object):
-    def __init__(self, frame_width, frame_height):
-        self.frame = np.zeros((frame_width,frame_height,3))
-        self.frame_width = frame_width
-        self.frame_height = frame_height
-        self.lock = Lock()
-
-    def write(self, buf):
-        image = np.frombuffer(buf,dtype=np.uint8)
-
-        self.lock.acquire()
-        self.frame = image.reshape((self.frame_width,self.frame_height,3))
-        self.lock.release()
+from simple_filter import SimpleFilter
+from camera_output import CameraOutput
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -93,6 +77,8 @@ class AmbientLEDs:
         #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
         self.init_camera_rois()
         self.ambient_num_rois = self.ambient_rois.shape[0]
+        self.ambient_filter_gains = np.array([0.5, 0.25, 0.125, 0.125]).T
+        self.ambient_filter = [SimpleFilter(self.ambient_filter_gains, 3) for _ in range(self.num_leds)]
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -266,7 +252,12 @@ class AmbientLEDs:
         for led_idx in range(self.num_leds):
             roi_idx = math.floor(led_idx/leds_per_roi)
             rgb = rgb_values[roi_idx]
-            self.set_led(led_idx, int(rgb[0]), int(rgb[1]), int(rgb[2]))
+            
+            rgb_input = np.asarray(rgb).T
+
+            rgb_output = self.ambient_filter[led_idx].apply(rgb_input)
+
+            self.set_led(led_idx, int(rgb_output[0]), int(rgb_output[1]), int(rgb_output[2]))
 
         self.pixels.show()
 
