@@ -79,6 +79,7 @@ class AmbientLEDs:
         self.ambient_num_rois = self.ambient_rois.shape[0]
         self.ambient_filter_gains = np.array([0.5, 0.25, 0.125, 0.125]).T
         self.ambient_filter = [SimpleFilter(self.ambient_filter_gains, 3) for _ in range(self.num_leds)]
+        self.ambient_values = np.zeros((self.num_leds,3)) # index by led index, rgb index
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -256,7 +257,8 @@ class AmbientLEDs:
             #rgb_input = np.asarray(rgb).T
 
             #rgb_output = self.ambient_filter[led_idx].apply(rgb_input)
-            self.rgb_output
+            self.ambient_values[led_idx] = 0.5 * (self.ambient_values[led_idx] + rgb)
+            rgb_output = self.ambient_values[led_idx]
             self.set_led(led_idx, int(rgb_output[0]), int(rgb_output[1]), int(rgb_output[2]))
 
         self.pixels.show()
