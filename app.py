@@ -6,7 +6,7 @@ from datetime import datetime
 import picamera
 
 from flask import Flask, render_template, request, redirect
-from tvleds import AmbientLEDs, CameraOutput
+from tvleds import *
 
 # init AmbientLeds object
 ambient_leds = AmbientLEDs()

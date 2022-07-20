@@ -4,8 +4,8 @@ import picamera
 import time
 import numpy as np
 import math
-from simple_filter import SimpleFilter
-from camera_output import CameraOutput
+from .simple_filter import SimpleFilter
+from .camera_output import CameraOutput
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
 class AmbientLEDs:
@@ -253,10 +253,10 @@ class AmbientLEDs:
             roi_idx = math.floor(led_idx/leds_per_roi)
             rgb = rgb_values[roi_idx]
             
-            rgb_input = np.asarray(rgb).T
+            #rgb_input = np.asarray(rgb).T
 
-            rgb_output = self.ambient_filter[led_idx].apply(rgb_input)
-
+            #rgb_output = self.ambient_filter[led_idx].apply(rgb_input)
+            self.rgb_output
             self.set_led(led_idx, int(rgb_output[0]), int(rgb_output[1]), int(rgb_output[2]))
 
         self.pixels.show()

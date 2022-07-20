@@ -22,7 +22,7 @@ class SimpleFilter():
     def apply(self, new_values):
 
         # add new column to values
-        self.values = np.hstack(new_values, self.values)
+        self.values = np.insert(self.values, 0, new_values, axis=1)
 
         # delete last (oldest) column
         self.values = np.delete(self.values, self.num_gains, axis=1)
