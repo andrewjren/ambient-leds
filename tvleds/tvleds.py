@@ -4,7 +4,6 @@ import picamera
 import time
 import numpy as np
 import math
-from .simple_filter import SimpleFilter
 from .camera_output import CameraOutput
 
 # AmbientLEDs defines and controls the LED Strips and Camera 
@@ -50,7 +49,7 @@ class AmbientLEDs:
         self.camera_output = CameraOutput(self.frame_width, self.frame_height)
 
         # Flask Config
-        self.hex_color = "#0000FF"
+        self.hex_colors = ["#0000FF" for _ in range(4)]
 
         # Generic LED Values
         self.curr_hue = 0         # 0 to 359 degrees
@@ -58,6 +57,9 @@ class AmbientLEDs:
         self.curr_intensity = 0.9 # 0 to 1, hardcode intensity for simplicity
         self.time_step_s = 0.05
         self.time_step_us = self.time_step_s * 1000000
+
+        # Fill Config
+        self.fill_num = 1
 
         # Mood Config
         self.mood_cycle_done = True
@@ -77,10 +79,8 @@ class AmbientLEDs:
         #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
         self.init_camera_rois()
         self.ambient_num_rois = self.ambient_rois.shape[0]
-        self.ambient_filter_gains = np.array([0.5, 0.25, 0.125, 0.125]).T
-        self.ambient_filter = [SimpleFilter(self.ambient_filter_gains, 3) for _ in range(self.num_leds)]
         self.ambient_values = np.zeros((self.num_leds,3)) # index by led index, rgb index
-        self.ambient_gain = 0.25
+        self.ambient_gain = 0.4
 
     # gamma shift RGB values based on gamma table
     def gamma_shift(self, in_red, in_green, in_blue):
@@ -107,6 +107,49 @@ class AmbientLEDs:
 
         # set all pixels
         self.pixels.fill((red, green, blue))
+
+        self.pixels.show()
+
+    def split_fill(self, fill_num):
+
+        if fill_num == 2:
+            r0, g0, b0 = AmbientLEDs.hex2rgb(self.hex_colors[0])
+            r1, g1, b1 = AmbientLEDs.hex2rgb(self.hex_colors[1])
+
+            for idx in range(self.num_leds):
+                if idx < self.num_leds / 2:
+                    self.set_led(idx,r0,g0,b0)
+                else:
+                    self.set_led(idx,r1,g1,b1)
+
+        elif fill_num == 3:
+            r0, g0, b0 = AmbientLEDs.hex2rgb(self.hex_colors[0])
+            r1, g1, b1 = AmbientLEDs.hex2rgb(self.hex_colors[1])
+            r2, g2, b2 = AmbientLEDs.hex2rgb(self.hex_colors[2])
+
+            for idx in range(self.num_leds):
+                if idx < self.num_ver:
+                    self.set_led(idx,r0,g0,b0)
+                elif idx < self.num_ver + self.num_hor:
+                    self.set_led(idx,r1,g1,b1)
+                else:
+                    self.set_led(idx,r2,g2,b2)
+
+        elif fill_num == 4:
+            r0, g0, b0 = AmbientLEDs.hex2rgb(self.hex_colors[0])
+            r1, g1, b1 = AmbientLEDs.hex2rgb(self.hex_colors[1])
+            r2, g2, b2 = AmbientLEDs.hex2rgb(self.hex_colors[2])
+            r3, g3, b3 = AmbientLEDs.hex2rgb(self.hex_colors[3])
+
+            for idx in range(self.num_leds):
+                if idx < self.num_ver/2:
+                    self.set_led(idx,r0,g0,b0)
+                elif idx < self.num_ver + self.num_hor/2:
+                    self.set_led(idx,r1,g1,b1)
+                elif idx < self.num_ver + self.num_hor + self.num_ver/2:
+                    self.set_led(idx,r2,g2,b2)
+                else:
+                    self.set_led(idx,r3,g3,b3)
 
         self.pixels.show()
 
@@ -255,9 +298,7 @@ class AmbientLEDs:
             roi_idx = math.floor(led_idx/leds_per_roi)
             rgb = rgb_values[roi_idx]
             
-            #rgb_input = np.asarray(rgb).T
-
-            #rgb_output = self.ambient_filter[led_idx].apply(rgb_input)
+            # filter new value by gain
             self.ambient_values[led_idx] = self.ambient_gain * rgb + (1 - self.ambient_gain) * self.ambient_values[led_idx]
             rgb_output = self.ambient_values[led_idx]
             self.set_led(led_idx, int(rgb_output[0]), int(rgb_output[1]), int(rgb_output[2]))

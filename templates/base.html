@@ -11,8 +11,13 @@
   </header>
   <body>
     <form action="/fill" method="post">
-      <label for="fill_rgb">Fill Color:</label>
-      <input name="fill_rgb" type="color" class="color" value="{{ color }}">
+      <label for="fill_num">Number of Colors:</label>
+      <input name="fill_num" id="fill_num_id" type="range" min="1" max="4" class="slider" oninput="fill_num_id.value = fill_num_id.value" value="{{ fill_num }}">
+      <output name="fill_num_out" id="fill_num_out_id">{{ fill_num }}</output>
+      <label for="fill_rgb0">Fill Color:</label>
+      {% for color in colors %}
+      <input name="fill_rgb{{ loop.index }}" type="color" class="color" value="{{ colors[loop.index] }}">
+      {% endfor %}
       <input type="submit" value="Update">
     </form>
   </body>

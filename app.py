@@ -122,16 +122,30 @@ def begin_task(task, mood_period = 15, pulse_period_s = 1):
 
 @app.route("/")
 def main():
-    return render_template('base.html', color=ambient_leds.hex_color, bpm=ambient_leds.pulse_bpm, mood_period=ambient_leds.mood_period)
+    return render_template('base.html', colors=ambient_leds.hex_colors, bpm=ambient_leds.pulse_bpm, mood_period=ambient_leds.mood_period)
 
 @app.route("/fill", methods=['POST'])
 def fill_color():
     trigger_thread_stop()
-    ambient_leds.hex_color = request.form.get('fill_rgb')
-    #print(color)
-    r,g,b = AmbientLEDs.hex2rgb(ambient_leds.hex_color)
-    print('RGB: {0},{1},{2}'.format(r,g,b))
-    ambient_leds.fill(r,g,b)
+
+    ambient_leds.fill_num = request.form.get('fill_num')
+
+    # get all colors listed in form
+    for idx in range(ambient_leds.fill_num):
+        form_str = 'fill_rgb{:d}'.format(idx)
+        ambient_leds.hex_colors[idx] = request.form.get(form_str)
+
+    # fill entire length
+    if ambient_leds.fill_num == 1:
+        r,g,b = AmbientLEDs.hex2rgb(ambient_leds.hex_colors[0])
+        print('RGB: {0},{1},{2}'.format(r,g,b))
+        ambient_leds.fill(r,g,b)
+
+    # split half/half
+    else:
+        print('Split LEDs by {0}'.format(ambient_leds.fill_num))
+        AmbientLEDs.split_fill(ambient_leds.fill_num)
+
     return redirect('/')
 
 @app.route("/mood", methods=['POST'])
