@@ -128,7 +128,7 @@ def main():
 def fill_color():
     trigger_thread_stop()
 
-    ambient_leds.fill_num = request.form.get('fill_num')
+    ambient_leds.fill_num = int(request.form.get('fill_num'))
 
     # get all colors listed in form
     for idx in range(ambient_leds.fill_num):
