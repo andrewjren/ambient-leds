@@ -122,7 +122,7 @@ def begin_task(task, mood_period = 15, pulse_period_s = 1):
 
 @app.route("/")
 def main():
-    return render_template('base.html', colors=ambient_leds.hex_colors, bpm=ambient_leds.pulse_bpm, mood_period=ambient_leds.mood_period)
+    return render_template('base.html', fill_num=ambient_leds.fill_num, colors=ambient_leds.hex_colors, bpm=ambient_leds.pulse_bpm, mood_period=ambient_leds.mood_period)
 
 @app.route("/fill", methods=['POST'])
 def fill_color():
@@ -144,7 +144,7 @@ def fill_color():
     # split half/half
     else:
         print('Split LEDs by {0}'.format(ambient_leds.fill_num))
-        AmbientLEDs.split_fill(ambient_leds.fill_num)
+        ambient_leds.split_fill(ambient_leds.fill_num)
 
     return redirect('/')
 
