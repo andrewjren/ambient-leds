@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
-  <h1>Color Select</h1>
+  <h1>LED Control Settings</h1>
 </nav>
 <hr class="solid">
 <section class="content">
@@ -20,6 +20,7 @@
       {% for color in colors %}
       <input name="fill_rgb{{ loop.index0 }}" type="color" class="color" value="{{ color }}">
       {% endfor %}
+      <br>
       <input type="submit" value="Update">
     </form>
   </body>
@@ -34,6 +35,7 @@
       <label for="mood_period">Transition Time [sec]:</label>
       <input name="mood_period" id="mood_period_id" type="range" min="1" max="20" class="slider" oninput="mood_period_out_id.value = mood_period_id.value" value="{{ mood_period }}">
       <output name="mood_period_out" id="mood_period_out_id">{{ mood_period }}</output>
+      <br>
       <input name="enable_mood" type="submit" value="Enable">
     </form>
   </body>
@@ -48,6 +50,7 @@
       <label for="pulse_bpm">Pulse Frequency [bpm]:</label>
       <input name="pulse_bpm" id="pulse_bpm_id" type="range" min="30" max="240" class="slider" oninput="pulse_bpm_out_id.value = pulse_bpm_id.value" value="{{ bpm }}">
       <output name="pulse_bpm_out" id="pulse_bpm_out_id">{{ bpm }}</output>
+      <br>
       <input name="enable_pulse" type="submit" value="Enable">
     </form>
   </body>
@@ -60,6 +63,7 @@
   <body>
     <form action="/ambient" method="post">
       <label for="enable_ambient">Enable Ambient Lighting:</label>
+      <br>
       <input name="enable_ambient" type="submit" value="Enable">
     </form>
   </body>
