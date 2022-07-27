@@ -2,5 +2,6 @@ html { font-family: Arial, Helvetica, sans-serif; background: rgb(224, 224, 224)
 body { max-width: 960px; margin: 0 auto; background: rgb(224, 224, 224); color: rgb(0, 0, 0); }
 label { width: 180px; display: inline-block; }
 input[type="submit"] { font-size: inherit; }
+input[type="color"] { width: 36px }
 nav h1 { color: rgb(0, 0, 0); font-size: xx-large; text-align: center;}
 hr.solid { border-top: 3px solid rgb(80, 80, 80)}
