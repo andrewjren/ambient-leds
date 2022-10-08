@@ -310,14 +310,14 @@ class AmbientLEDs:
     def step_rainbow(self):
         # 
         for led_idx in range(self.num_leds):
-            pixel_index = led_idx + self.rainbow_idx
+            pixel_index = (led_idx * 2 + self.rainbow_idx) % 360
             r,g,b = self.wheel(pixel_index)
             self.set_led(led_idx, r, g, b)
 
         self.pixels.show()
 
         # increment rainbow index
-        self.rainbow_idx = (self.rainbow_idx + 1) % 360
+        self.rainbow_idx = (self.rainbow_idx + 1) % self.num_leds
 
 
     # thanks to this stack overflow page
@@ -361,7 +361,7 @@ class AmbientLEDs:
         saturation = 1
         intensity = 1
 
-        r,g,b = self.hsi2rgb(hue,saturation,intensity)
+        r,g,b = AmbientLEDs.hsi2rgb(hue,saturation,intensity)
 
         return (r, g, b)
 
