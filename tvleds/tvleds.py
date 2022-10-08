@@ -45,7 +45,6 @@ class AmbientLEDs:
         self.frame_height = 480
         self.resolution = '{0:d}x{1:d}'.format(self.frame_width,self.frame_height)
         self.framerate = 24
-        #self.camera = picamera.PiCamera(resolution='640x480', framerate=24)
         self.camera_output = CameraOutput(self.frame_width, self.frame_height)
 
         # Flask Config
@@ -79,7 +78,6 @@ class AmbientLEDs:
         self.rainbow_idx = 0
 
         # Ambient Config
-        #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
         self.init_camera_rois()
         self.ambient_num_rois = self.ambient_rois.shape[0]
         self.ambient_values = np.zeros((self.num_leds,3)) # index by led index, rgb index
@@ -312,14 +310,14 @@ class AmbientLEDs:
     def step_rainbow(self):
         # 
         for led_idx in range(self.num_leds):
-            pixel_index = (led_idx * 256 // self.num_leds) + self.rainbow_idx
-            r,g,b = self.wheel(pixel_index & 255)
+            pixel_index = led_idx + self.rainbow_idx
+            r,g,b = self.wheel(pixel_index)
             self.set_led(led_idx, r, g, b)
 
         self.pixels.show()
 
         # increment rainbow index
-        self.rainbow_idx = (self.rainbow_idx + 1) % 256
+        self.rainbow_idx = (self.rainbow_idx + 1) % 360
 
 
     # thanks to this stack overflow page
@@ -359,22 +357,12 @@ class AmbientLEDs:
     def wheel(pos):
         # Input a value 0 to 255 to get a color value.
         # The colours are a transition r - g - b - back to r.
-        if pos < 0 or pos > 255:
-            r = g = b = 0
-        elif pos < 85:
-            r = int(pos * 3)
-            g = int(255 - pos * 3)
-            b = 0
-        elif pos < 170:
-            pos -= 85
-            r = int(255 - pos * 3)
-            g = 0
-            b = int(pos * 3)
-        else:
-            pos -= 170
-            r = 0
-            g = int(pos * 3)
-            b = int(255 - pos * 3)
+        hue = pos
+        saturation = 1
+        intensity = 1
+
+        r,g,b = self.hsi2rgb(hue,saturation,intensity)
+
         return (r, g, b)
 
     def init_camera_rois(self):
