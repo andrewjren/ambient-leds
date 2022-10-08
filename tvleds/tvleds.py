@@ -75,6 +75,9 @@ class AmbientLEDs:
         self.pulse_count = 0
         self.pulse_bpm = 60
 
+        # Rainbow Config
+        self.rainbow_idx = 0
+
         # Ambient Config
         #self.ambient_rois = np.array([[160,360],[160,120],[480,180],[480,300]])
         self.init_camera_rois()
@@ -304,6 +307,19 @@ class AmbientLEDs:
             self.set_led(led_idx, int(rgb_output[0]), int(rgb_output[1]), int(rgb_output[2]))
 
         self.pixels.show()
+
+    # https://learn.adafruit.com/neopixels-on-raspberry-pi/python-usage
+    def step_rainbow(self):
+        # 
+        for led_idx in range(self.num_leds):
+            pixel_index = (i * 256 // self.num_leds) + 
+            r,g,b = self.wheel(pixel_index)
+            self.set_led(led_idx, r, g, b)
+
+        self.pixels.show()
+
+        # increment rainbow index
+        self.rainbow_idx = (self.rainbow_idx + 1) % 256
 
 
     # thanks to this stack overflow page

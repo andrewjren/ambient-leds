@@ -96,6 +96,22 @@ def task_ambient():
         camera.stop_recording()
         pass
 
+def task_rainbow():
+    global ambient_leds
+    print('Beginning Rainbow Task...')
+
+    while not stop_thread.is_set():
+        # get current time
+        start_time = datetime.now()
+
+        # take step of mood
+        ambient_leds.step_rainbow()
+
+        # get time elapsed and sleep for remaining time to match period
+        duration = datetime.now() - start_time
+        remaining_time = ambient_leds.time_step_us - duration.microseconds
+
+        time.sleep(remaining_time/1000000)
     
 
 def begin_task(task, mood_period = 15, pulse_period_s = 1):
@@ -113,6 +129,10 @@ def begin_task(task, mood_period = 15, pulse_period_s = 1):
 
     elif task == 'ambient':
         t = threading.Thread(name='Ambient Thread', target=task_ambient)
+        t.start()
+        threads.append(t)
+    elif task == 'rainbow':
+        t = threading.Thread(name='Rainbow Thread', target=task_rainbow)
         t.start()
         threads.append(t)
     else:
@@ -178,5 +198,14 @@ def enable_ambient():
     print('Ambient Lighting Enabled!')
 
     begin_task('ambient')
+
+    return redirect('/')
+
+@app.route("/rainbow", methods=['POST'])
+def enable_rainbow():
+    trigger_thread_stop()
+    print('Rainbow Thread Enabled@')
+
+    begin_task('rainbow')
 
     return redirect('/')
