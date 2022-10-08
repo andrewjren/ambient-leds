@@ -111,7 +111,7 @@ def task_rainbow():
         duration = datetime.now() - start_time
         remaining_time = ambient_leds.time_step_us - duration.microseconds
 
-        time.sleep(remaining_time/1000000)
+        time.sleep(0.001)
     
 
 def begin_task(task, mood_period = 15, pulse_period_s = 1):
