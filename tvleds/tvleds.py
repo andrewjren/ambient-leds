@@ -313,7 +313,7 @@ class AmbientLEDs:
         # 
         for led_idx in range(self.num_leds):
             pixel_index = (led_idx * 256 // self.num_leds) + self.rainbow_idx
-            r,g,b = self.wheel(pixel_index)
+            r,g,b = self.wheel(pixel_index & 255)
             self.set_led(led_idx, r, g, b)
 
         self.pixels.show()
