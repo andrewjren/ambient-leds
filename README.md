@@ -18,7 +18,8 @@ available LED strip controllers.
 
 ## Demo Video
 
-TBC
+[![Click here to watch!](http://img.youtube.com/vi/9feCBqlGUGg/0.jpg)](http://www.youtube.com/watch?v=9feCBqlGUGg "Ambient LEDs Demo")
+
 
 ## How It Works
 
